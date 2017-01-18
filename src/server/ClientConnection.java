@@ -2,7 +2,7 @@ package server;
 
 import common.*;
 
-public class ClientConnection {
+public class ClientConnection implements MoveSource{
 	private String name;
 	private PlayerState state;
 	// private Socket socket
