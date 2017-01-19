@@ -158,7 +158,7 @@ public class Board {
     public void reset() {
         Arrays.fill(fields, Mark.EMPTY);
     }
-    
+
     public String toString() {
         String str = "";
         for (int i = 0; i < DIM; i++) {

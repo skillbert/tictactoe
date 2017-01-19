@@ -1,6 +1,6 @@
 package common;
 
-public enum PlayerState {
+public enum SessionState {
 	disconnected,
 	connecting,
 	lobby,
