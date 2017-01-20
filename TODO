@@ -1,0 +1,19 @@
+fix win conditions =(
+fix sending wins
+leave game
+deal with client disconnections
+more descriptive gui
+make sure we don't try to send something to a disconnected client
+
+=== code cleanup ===
+merge remoteplayer and clientconnection classes
+maybe move mark away from the player
+rename row,col,height to y,x,z and reorder them back to x,y,z
+
+=== extensions ===
+gui
+ai
+make sure the server and client parse all possible input correctly (security, don't need ssl and stuff)
+different board sizes   - protocol doesn't support
+different player amount - protocol doesn't support
+javascript/websocket support

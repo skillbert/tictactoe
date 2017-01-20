@@ -18,4 +18,17 @@ public enum Mark {
 	public String toString() {
 		return this.name().toLowerCase();
 	}
+
+	public String getMarkString() {
+		switch (this) {
+		case EMPTY:
+			return " ";
+		case RED:
+			return "X";
+		case YELLOW:
+			return "O";
+		default:
+			return "?";
+		}
+	}
 }

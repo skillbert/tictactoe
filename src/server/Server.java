@@ -8,15 +8,12 @@ import java.util.ArrayList;
 
 import common.Game;
 import common.Mark;
-import common.Player;
 import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
 import common.Util;
 
 public class Server {
-	private static int playerindex = 0;
-
 	private AsynchronousServerSocketChannel ssocket;
 	private ArrayList<ClientConnection> clients;
 
@@ -56,7 +53,7 @@ public class Server {
 	 *            The socket that is connected to the new client
 	 */
 	private void connectSocket(AsynchronousSocketChannel sock) {
-		ClientConnection client = new ClientConnection(this, sock, "Player " + (++playerindex));
+		ClientConnection client = new ClientConnection(this, sock);
 		clients.add(client);
 		System.out.println("client connected, total: " + clients.size());
 		startAcceptClient();
@@ -72,21 +69,43 @@ public class Server {
 		System.out.println("Client disconnected, clients left: " + clients.size());
 	}
 
+	/**
+	 * Checks all clients and starts a game if enough players are queued
+	 */
 	public void findQueue() {
-		ClientConnection[] cons = (ClientConnection[]) clients.stream().filter(c -> c.getState() == SessionState.queued)
-				.toArray();
-		if (cons.length >= Game.NUMBER_PLAYERS) {
-			ArrayList<Player> players = new ArrayList<>();
+		ArrayList<ClientConnection> cons = new ArrayList<>();
+		for (ClientConnection con : clients) {
+			if (con.getState() == SessionState.queued) {
+				cons.add(con);
+			}
+		}
+		System.out.println("total queued: " + cons.size());
+		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons.size(); offset += Game.NUMBER_PLAYERS) {
+			ArrayList<RemotePlayer> players = new ArrayList<>();
 			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
-				players.add(new RemotePlayer(cons[i], Mark.fromInt(i)));
+				players.add(new RemotePlayer(cons.get(offset + i), Mark.fromInt(i)));
 			}
 			startGame(players);
 		}
 	}
 
-	public void startGame(ArrayList<Player> players) {
+	public void startGame(ArrayList<RemotePlayer> players) {
+		System.out.println("Staring game with " + players.get(0) + ", " + players.get(1));
 		Game game = new Game(players);
+		for (RemotePlayer p : players) {
+			p.setGame(game);
+			p.getClientConnection().setState(SessionState.ingame);
+		}
 		game.startGame();
+	}
+
+	public ClientConnection findPlayer(String playername) {
+		for (ClientConnection p : clients) {
+			if (p.getName().equals(playername)) {
+				return p;
+			}
+		}
+		return null;
 	}
 }
 

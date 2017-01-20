@@ -8,11 +8,11 @@ public class Game extends Observable {
 	public static final int NUMBER_PLAYERS = 2;
 	private GameState state;
 	private Board board;
-	private ArrayList<Player> players;
+	private ArrayList<? extends Player> players;
 	private int turn;
 	private Point lastmove;
 
-	public Game(ArrayList<Player> players) {
+	public Game(ArrayList<? extends Player> players) {
 		if (players.size() != 2) {
 			throw new RuntimeException("nope, max 2 players for now");
 		}
@@ -79,7 +79,7 @@ public class Game extends Observable {
 		return getTurn() == player;
 	}
 
-	public ArrayList<Player> getPlayers() {
+	public ArrayList<? extends Player> getPlayers() {
 		return players;
 	}
 
@@ -89,6 +89,13 @@ public class Game extends Observable {
 
 	public static enum EventType {
 		started, placed
+	}
+
+	@Override
+	public String toString() {
+		String str = board.toString();
+		str += "It is " + getTurn().getName() + "'s turn";
+		return str;
 	}
 }
 

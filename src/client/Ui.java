@@ -1,10 +1,10 @@
-package common;
+package client;
 
 import java.util.Observer;
 
 public interface Ui extends Observer {
 	public static enum UpdateType {
-		state, game, gamemove
+		state, gamemove
 	}
 
 	/**

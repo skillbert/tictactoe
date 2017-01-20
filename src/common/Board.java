@@ -212,16 +212,17 @@ public class Board {
 	public String toString() {
 		String str = "";
 		for (int i = 0; i < DIM; i++) {
-			str += "\n" + new String(new char[DIM]).replace("\0", " | ----") + " | \n";
+			str += "\n " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
 			for (int j = 0; j < DIM; j++) {
-				str += " | ";
+				str += "| ";
 				for (int k = 0; k < DIM; k++) {
-					str += getField(index(i, j, k)).name().substring(0, 1);
+					str += getField(index(i, j, k)).getMarkString();
 				}
+				str += " ";
 			}
-			str += " | ";
+			str += "| ";
 		}
-		str += "\n" + new String(new char[DIM]).replace("\0", " | ----") + " | \n";
+		str += "\n " + new String(new char[DIM]).replace("\0", "+------") + "+ \n";
 		return str;
 	}
 }

@@ -9,16 +9,13 @@ import server.ClientConnection;
 public class RemotePlayer implements Player {
 	private ClientConnection connection;
 	private Mark mark;
+	private Game game;
 
+	// TODO merge this into ClientConnection
 	public RemotePlayer(ClientConnection connection, Mark mark) {
 		this.connection = connection;
 		this.mark = mark;
-	}
-
-	@Override
-	public int determineMove(Board board) {
-		// TODO Auto-generated method stub
-		return 0;
+		connection.setPlayer(this);
 	}
 
 	@Override
@@ -50,7 +47,7 @@ public class RemotePlayer implements Player {
 			break;
 
 		case started:
-			ArrayList<Player> players = game.getPlayers();
+			ArrayList<? extends Player> players = game.getPlayers();
 			String playerstr = "";
 			for (Player p : players) {
 				playerstr += " " + p.getName();
@@ -60,10 +57,17 @@ public class RemotePlayer implements Player {
 		}
 	}
 
-	@Override
-	public void makeMove(Board board) {
-		// TODO Auto-generated method stub
+	public ClientConnection getClientConnection() {
+		return connection;
+	}
 
+	public Game getGame() {
+		return game;
+	}
+
+	public void setGame(Game game) {
+		this.game = game;
+		game.addObserver(this);
 	}
 }
 
