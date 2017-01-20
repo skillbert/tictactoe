@@ -65,33 +65,34 @@ public class Board {
 				}
 			}
 		}
-
 		// calculate all win conditions
-		// do this per instance as board may differ in size
 		wincons = new ArrayList<>();
-		int wl = DIM;
+		int wl = DIM;// win length
 		for (int[] step : stepdirs) {
 			for (int row = 0; row < DIM; row++) {
-				if (row + step[0] * wl < 0 || row + step[0] * wl >= DIM) {
+				if (row + step[0] * (wl - 1) < 0 || row + step[0] * (wl - 1) >= DIM) {
 					continue;
 				}
 				for (int col = 0; col < DIM; col++) {
-					if (col + step[1] * wl < 0 || col + step[1] * wl >= DIM) {
+					if (col + step[1] * (wl - 1) < 0 || col + step[1] * (wl - 1) >= DIM) {
 						continue;
 					}
 					for (int height = 0; height < DIM; height++) {
-						if (height + step[2] * wl < 0 || height + step[2] * wl >= DIM) {
+						if (height + step[2] * (wl - 1) < 0 || height + step[2] * (wl - 1) >= DIM) {
 							continue;
 						}
 						int[] wincon = new int[wl];
 						for (int i = 0; i < wl; i++) {
-							wincon[i] = index(row + i + step[0], col + i * step[1], height + i * step[2]);
+							wincon[i] = index(row + i * step[0], col + i * step[1], height + i * step[2]);
 						}
 						wincons.add(wincon);
 					}
 				}
 			}
 		}
+
+		// wincons.stream().forEach(w -> System.out.println(w[0] + " " + w[1] +
+		// " " + w[2] + " " + w[3]));
 	}
 
 	/**
