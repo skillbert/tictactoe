@@ -56,6 +56,11 @@ public class ClientConnection {
 	public void showModalMessage(String message) {
 		sock.sendString("message " + message);
 	}
+
+	public void sendString(String str) {
+		sock.sendString(str);
+	}
+
 }
 
 

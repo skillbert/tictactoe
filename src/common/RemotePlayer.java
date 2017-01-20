@@ -1,5 +1,9 @@
 package common;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Observable;
+
 import server.ClientConnection;
 
 public class RemotePlayer implements Player {
@@ -28,11 +32,61 @@ public class RemotePlayer implements Player {
 	}
 
 	@Override
-	public void makeMove(Board board) {
-
+	public void showModalMessage(String message) {
+		connection.showModalMessage(message);
 	}
 
-	public ClientConnection getConnection() {
-		return connection;
+	@Override
+	public void update(Observable o, Object arg) {
+		Game game = (Game) o;
+
+		switch ((Game.EventType) arg) {
+		case placed:
+			String newPlayer = game.getTurn().getName();
+			String currentPlayer = game.getPreviousTurn().getName();
+			Point lastmove = game.getLastMove();
+			connection.sendString("placed " + game.getState() + " " + lastmove.x + " " + lastmove.y + " "
+					+ currentPlayer + " " + newPlayer);
+			break;
+
+		case started:
+			ArrayList<Player> players = game.getPlayers();
+			String playerstr = "";
+			for (Player p : players) {
+				playerstr += " " + p.getName();
+			}
+			connection.sendString("startGame" + playerstr);
+			break;
+		}
+	}
+
+	@Override
+	public void makeMove(Board board) {
+		// TODO Auto-generated method stub
+
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

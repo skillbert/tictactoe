@@ -1,52 +1,94 @@
 package common;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Observable;
 
 public class Game extends Observable {
 	public static final int NUMBER_PLAYERS = 2;
+	private GameState state;
 	private Board board;
-	private Player[] players;
+	private ArrayList<Player> players;
 	private int turn;
+	private Point lastmove;
 
-
-	public Game(Player[] players) {
-		if (players.length != 2) {
+	public Game(ArrayList<Player> players) {
+		if (players.size() != 2) {
 			throw new RuntimeException("nope, max 2 players for now");
 		}
 		board = new Board();
 		this.players = players;
-		startGame();
+		reset();
+	}
+
+	private void reset() {
+		board.reset();
+		turn = 0;
+		state = GameState.onGoing;
+		lastmove = new Point(0, 0);
 	}
 
 	public void startGame() {
-		turn = 0;
-		board.reset();
-	}
-
-	public void play() {
-		while (!board.gameOver()) {
-			update();
-			Player player = players[turn % NUMBER_PLAYERS];
-			board.setField(player.determineMove(board), player.getMark());
-			turn += 1;
-		}
-		if (board.isWinner(players[(turn - 1) % NUMBER_PLAYERS].getMark())) {
-			System.out.println(players[(turn - 1) % NUMBER_PLAYERS].getName() + " Wins");
-		} else {
-			System.out.println("Board full, no winners.");
-		}
-	}
-
-	private void moveMade(int index) {
-		if (board.gameOver()) {
-			setChanged();
-			notifyObservers("gameover");
-		}
-	}
-
-	private void update() {
 		setChanged();
-		notifyObservers();
+		notifyObservers(EventType.started);
+	}
+
+	public void commitMove(Player player, int row, int column) {
+		if (!hasTurn(player)) {
+			player.showModalMessage("It is not your turn!");
+			return;
+		}
+		int index = board.indexFromColumn(row, column);
+		if (index == Board.INVALID_INDEX) {
+			player.showModalMessage("The column you selected is full");
+			return;
+		}
+		board.setField(index, player.getMark());
+		lastmove = new Point(column, row);
+		turn++;
+
+		Mark winmark = board.findWinner();
+		if (winmark != Mark.EMPTY) {
+			// Player winner = players.stream().filter(p -> p.getMark() ==
+			// winmark).findAny().get();
+			state = GameState.won;
+		} else if (board.isFull()) {
+			state = GameState.draw;
+		}
+		setChanged();
+		notifyObservers(EventType.placed);
+	}
+
+	public Player getTurn() {
+		return players.get(turn % players.size());
+	}
+
+	public Player getPreviousTurn() {
+		return players.get((turn + players.size() - 1) % players.size());
+	}
+
+	public GameState getState() {
+		return state;
+	}
+
+	public Point getLastMove() {
+		return lastmove;
+	}
+
+	private boolean hasTurn(Player player) {
+		return getTurn() == player;
+	}
+
+	public ArrayList<Player> getPlayers() {
+		return players;
+	}
+
+	public static enum GameState {
+		onGoing, won, draw
+	}
+
+	public static enum EventType {
+		started, placed
 	}
 }
 

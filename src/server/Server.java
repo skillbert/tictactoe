@@ -74,25 +74,18 @@ public class Server {
 
 	public void findQueue() {
 		ClientConnection[] cons = (ClientConnection[]) clients.stream().filter(c -> c.getState() == SessionState.queued)
-				.limit(Game.NUMBER_PLAYERS).toArray();
-		if (cons.length == Game.NUMBER_PLAYERS) {
-			RemotePlayer[] players = new RemotePlayer[cons.length];
-			for (int i = 0; i < cons.length; i++) {
-				players[i] = new RemotePlayer(cons[i], Mark.fromInt(i));
+				.toArray();
+		if (cons.length >= Game.NUMBER_PLAYERS) {
+			ArrayList<Player> players = new ArrayList<>();
+			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
+				players.add(new RemotePlayer(cons[i], Mark.fromInt(i)));
 			}
+			startGame(players);
 		}
 	}
 
-	public void startGame(Player[] players) {
+	public void startGame(ArrayList<Player> players) {
 		Game game = new Game(players);
-
-		// tell all our remote players about this game
-		for (Player player : players) {
-			if (player instanceof RemotePlayer) {
-				((RemotePlayer) player).getConnection().setState(SessionState.ingame);
-			}
-		}
-
 		game.startGame();
 	}
 }
