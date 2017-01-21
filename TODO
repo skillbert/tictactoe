@@ -1,6 +1,6 @@
-fix win conditions =(
 fix sending wins
 leave game
+send \n at the end of every message and fix being able to deal with them (probably implicit part of protocol since the assignments)
 deal with client disconnections
 more descriptive gui
 make sure we don't try to send something to a disconnected client

@@ -17,8 +17,9 @@ import java.util.Queue;
 public class AsyncSocket {
 	private static final int BUFFERSIZE = 2048;
 
+	private SocketProtocol protocol;
 	private AsynchronousSocketChannel channel;
-	private Queue<String> writequeue = new LinkedList<>();
+	private Queue<byte[]> writequeue = new LinkedList<>();
 	private boolean iswriting = false;
 	private boolean isreading = false;
 	private ByteBuffer readbuffer = ByteBuffer.allocate(BUFFERSIZE);
@@ -32,8 +33,8 @@ public class AsyncSocket {
 	 * Creates an idle AsyncSocket object. Call the connect function after
 	 * setting the event functions to connect to a server
 	 */
-	public static AsyncSocket create() {
-		return new AsyncSocket();
+	public AsyncSocket() {
+		setProtocol(new DirectProtocol());
 	}
 
 	/**
@@ -43,10 +44,16 @@ public class AsyncSocket {
 	 * @param channel
 	 *            an existing AsynchronousSocketChannel to wrap
 	 */
-	public static AsyncSocket create(AsynchronousSocketChannel channel) {
-		AsyncSocket sock = new AsyncSocket();
-		sock.channel = channel;
-		return sock;
+	public AsyncSocket(AsynchronousSocketChannel channel) {
+		this.channel = channel;
+		setProtocol(new DirectProtocol());
+	}
+
+
+
+	public void setProtocol(SocketProtocol protocol) {
+		this.protocol = protocol;
+		protocol.setSocket(this);
 	}
 
 	/**
@@ -84,14 +91,24 @@ public class AsyncSocket {
 	}
 
 	/**
-	 * Sends a string to the server, the string is queued and flushed
-	 * automatically
+	 * Converts the string into a series of bytes, then queues and flushes them
 	 * 
 	 * @param str
 	 *            the string to send
 	 */
-	public synchronized void sendString(String str) {
-		writequeue.add(str);
+	public void sendString(String str) {
+		sendPacket(protocol.textPacket(str));
+	}
+
+	/**
+	 * Send a series of bytes through the connection. The bytes are queued and
+	 * flushed automatically
+	 * 
+	 * @param bytes
+	 *            the bytes to send
+	 */
+	public synchronized void sendPacket(byte[] bytes) {
+		writequeue.add(bytes);
 		flush();
 	}
 
@@ -99,10 +116,12 @@ public class AsyncSocket {
 	 * Attempts to flush any queued messages
 	 */
 	private synchronized void flush() {
-		String message = writequeue.poll();
-		if (message != null && !iswriting) {
+		if (iswriting) {
+			return;
+		}
+		byte[] bytes = writequeue.poll();
+		if (bytes != null) {
 			iswriting = true;
-			byte[] bytes = message.getBytes(Protocol.charset);
 			channel.write(ByteBuffer.wrap(bytes), null, new Util.SimpleHandler<>(v -> {
 				iswriting = false;
 				flush();
@@ -172,34 +191,40 @@ public class AsyncSocket {
 		if (!isreading && isConnected()) {
 			isreading = true;
 			channel.read(readbuffer, null,
-					new Util.SimpleHandler<>(length -> bufferReceived(length), ex -> readError()));
+					new Util.SimpleHandler<>(length -> bufferReceived(length), ex -> connectionClosed()));
 		}
 	}
 
 	/**
 	 * Called when an error occurs while reading from the socket
 	 */
-	private void readError() {
+	public void connectionClosed() {
 		if (closeCb != null) {
 			closeCb.run();
 		}
+		close();
 	}
 
 	/**
 	 * Called when a new buffer is read from the socket
 	 */
 	private void bufferReceived(int length) {
+		if (length < 0) {
+			connectionClosed();
+			return;
+		}
 		readbuffer.flip();
 		byte[] bytes = new byte[length];
 		readbuffer.get(bytes);
-		String message = new String(bytes, Protocol.charset);
+		String message = protocol.parsePacket(bytes);
+		if (message != null) {
+			if (messageCb != null) {
+				messageCb.run(message);
+			}
+		}
 		readbuffer.clear();
 		isreading = false;
 		startReading();
-
-		if (messageCb != null) {
-			messageCb.run(message);
-		}
 	}
 
 	/**
@@ -218,7 +243,9 @@ public class AsyncSocket {
 		return false;
 	}
 
-
+	public AsynchronousSocketChannel getChannel() {
+		return channel;
+	}
 
 
 

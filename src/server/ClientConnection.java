@@ -6,6 +6,8 @@ import common.AsyncSocket;
 import common.Player;
 import common.RemotePlayer;
 import common.SessionState;
+import httpServer.BasicHttpServer;
+import httpServer.WebSocketProtocol;
 
 public class ClientConnection {
 	private String name;
@@ -13,18 +15,40 @@ public class ClientConnection {
 	private AsyncSocket sock;
 	private Server server;
 	private RemotePlayer player;
+	private boolean isBasicSocket = true;
 
 	public ClientConnection(Server server, AsynchronousSocketChannel asyncChannel) {
 		this.server = server;
 		this.state = SessionState.authenticating;
 		this.name = "";
 
-		sock = AsyncSocket.create(asyncChannel);
+		setSocket(new AsyncSocket(asyncChannel));
+	}
+
+	private void setSocket(AsyncSocket sock) {
+		this.sock = sock;
 		sock.onClose(() -> server.disconnectClient(this));
 		sock.onMessage(str -> parseMessage(str));
 	}
 
 	private void parseMessage(String message) {
+		// check if the request is using a different protocol
+		if (isBasicSocket && state == SessionState.authenticating) {
+			// websocket
+			WebSocketProtocol websock = WebSocketProtocol.tryConnectWebsocket(message, sock);
+			if (websock != null) {
+				sock.setProtocol(websock);
+				isBasicSocket = false;
+				System.out.println("websocket client connected");
+				return;
+			}
+
+			// simple http request
+			if (BasicHttpServer.tryRespondGET(message, sock)) {
+				return;
+			}
+		}
+
 		System.out.println(name + "\t>> " + message);
 		String[] parts = message.split(" ");
 		switch (parts[0]) {

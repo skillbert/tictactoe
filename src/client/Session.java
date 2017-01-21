@@ -42,7 +42,7 @@ public class Session extends Observable {
 
 	public void connect(String host, int port) {
 		setState(SessionState.connecting);
-		sock = AsyncSocket.create();
+		sock = new AsyncSocket();
 		sock.onClose(() -> connectionClosed());
 		sock.onMessage(str -> parseMessage(str));
 		sock.onConnect(() -> connected());
