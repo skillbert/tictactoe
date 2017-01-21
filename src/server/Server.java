@@ -36,8 +36,10 @@ public class Server {
 	public Server(int port) throws IOException {
 		clients = new ArrayList<>();
 
+
+
 		ssocket = AsynchronousServerSocketChannel.open();
-		ssocket.bind(new InetSocketAddress("localhost", port));
+		ssocket.bind(new InetSocketAddress(port));
 		startAcceptClient();
 		System.out.println("Server started and listening on port " + port);
 	}

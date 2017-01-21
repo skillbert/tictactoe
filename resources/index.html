@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+	<script type="text/javascript" src="/util.js"></script>
+	<script type="text/javascript" src="scripts.js"></script>
+	<style>
+		.maincontainer{display:flex; flex-direction:row; align-items:stretch; width:100%; height:100%; position:absolute; top:0px; left:0px;}
+		.messagecontainer{width:250px; display:flex; flex-direction:column;}
+			.messagebox{flex:1; overflow-y:scroll; padding:3px;}
+			.inputcontainer{display:flex; height:22px; align-items:stretch; flex-direction:row;}
+				.input{width:100%; height:100%; box-sizing:border-box; flex:1;}
+				.inputbutton{}
+		.mark{border-radius:200px; position:absolute; text-align:center; line-height:100px; pointer-events:none;}
+		.mark[p=p-1]{}
+		.mark.floor{background:rgba(0,0,0,0.1);}
+		.mark.available{pointer-events:unset;}
+		.mark.available:hover{display:unset; background:radial-gradient(rgba(255,255,255,0.3),rgba(0,0,0,0.3));}
+		.mark[p=p0]{background:radial-gradient(red,black);}
+		.mark[p=p1]{background:radial-gradient(blue,black);}
+
+		.field{position:relative; background:radial-gradient(#fff,#aaa); z-index:0; flex:1; overflow:hidden;}
+	</style>
+</head>
+<body onload="start();">
+
+</body>
+</html>

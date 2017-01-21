@@ -1,6 +1,9 @@
 package httpServer;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +23,14 @@ public class BasicHttpServer {
 
 
 	static {
-		addPage("/", "omfg it works");
+		try {
+			addPage("/", new String(Files.readAllBytes(Paths.get("resources/index.html"))));
+			addPage("/scripts.js", new String(Files.readAllBytes(Paths.get("resources/scripts.js"))));
+			addPage("/util.js", new String(Files.readAllBytes(Paths.get("resources/util.js"))));
+		} catch (IOException e) {
+			System.out.println("Failed to load http files");
+			e.printStackTrace();
+		}
 	}
 
 
