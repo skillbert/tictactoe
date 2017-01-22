@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Connect 4 in 3D!</title>
 	<meta charset="utf-8" />
-	<script type="text/javascript" src="/util.js"></script>
+	<script type="text/javascript" src="util.js"></script>
 	<script type="text/javascript" src="scripts.js"></script>
 	<style>
+		body{font-family:sans-serif;}
 		.maincontainer{display:flex; flex-direction:row; align-items:stretch; width:100%; height:100%; position:absolute; top:0px; left:0px;}
-		.messagecontainer{width:250px; display:flex; flex-direction:column;}
+		.messagecontainer{display:flex; flex-direction:column; width:70%; position:absolute; bottom:10px; left:15%; border:1px solid rgba(128,128,128,0.3); height:120px;}
 			.messagebox{flex:1; overflow-y:scroll; padding:3px;}
 			.inputcontainer{display:flex; height:22px; align-items:stretch; flex-direction:row;}
 				.input{width:100%; height:100%; box-sizing:border-box; flex:1;}
@@ -20,7 +21,14 @@
 		.mark[p=p0]{background:radial-gradient(red,black);}
 		.mark[p=p1]{background:radial-gradient(blue,black);}
 
-		.field{position:relative; background:radial-gradient(#fff,#aaa); z-index:0; flex:1; overflow:hidden;}
+		.field{position:relative; background:radial-gradient(#fff,#aaa); z-index:0; flex:1; overflow:hidden; left:0px; top:0px;}
+			.playerlist{display:flex; justify-content:space-around; pointer-events:none;}
+				.playerdisplay{padding:1px 10px;  margin-top:5px; border:1px solid; border-radius:15px;}
+				.playerdisplay.hasturn{color:white;}
+				.player-0{border-color:red;}
+				.player-1{border-color:blue;}
+				.player-0.hasturn{background:red;}
+				.player-1.hasturn{background:blue;}
 	</style>
 </head>
 <body onload="start();">

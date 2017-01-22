@@ -1,23 +1,22 @@
 ///<reference path="/runeappslib.js">
 "use strict";
 
-
 var field = null;
 var ui = null;
 var con = null;
 var dispaynet = false;
-
+var myname = "Anon_" + Math.floor(Math.random() * 1000);
 
 
 
 
 
 function start() {
-	field = new Field(4, 4, 4);
-	ui = new UI(field);
+	ui = new UI();
 	connect();
 	document.body.appendChild(ui.el);
 	ui.drawField();
+	window.onresize = function () { if (ui) { ui.drawField(); } };
 }
 
 function connect() {
@@ -25,7 +24,7 @@ function connect() {
 	con = new WebSocket("ws://" + location.hostname + ":12345");
 	con.onerror = e=>ui.showMessage("connection error: " + e);
 	con.onmessage = messageReceived;
-	con.onopen = e=>sendMessage("login random" + (Math.random() * 1000 | 0));
+	con.onopen = e=>sendMessage("login " + myname);
 }
 
 function messageReceived(e){
@@ -36,8 +35,7 @@ function messageReceived(e){
 		ui.showMessage("Waiting for opponent...");
 	}
 	if (match = message.match(/^startGame (\w+) (\w+)$/)) {
-		field.reset();
-		ui.drawField();
+		ui.startGame(match[1], match[2]);
 		ui.showMessage("New game started. " + match[1] + " VS " + match[2]);
 		ui.showMessage(match[1] + "'s turn");
 	}
@@ -76,13 +74,13 @@ function Field(w,d,h) {
 	this.height = h;
 
 	var nPlayers = 2;
-	var turn = 0;
+	this.turn = 0;
 	var layeroffset = this.width * this.depth;
 
 	this.place = function (x, y) {
 		for (var i = x + this.width * y; i < this.fields.length; i += layeroffset) {
 			if (this.fields[i] == -1) {
-				this.setMark(i, turn);
+				this.setMark(i, this.turn);
 				return;
 			}
 		}
@@ -91,7 +89,7 @@ function Field(w,d,h) {
 
 	this.setMark = function (index, mark) {
 		this.fields[index] = mark;
-		turn = (turn + 1) % nPlayers;
+		this.turn = (this.turn + 1) % nPlayers;
 	}
 
 	this.reset = function () {
@@ -118,8 +116,9 @@ function Field(w,d,h) {
 	this.reset();
 }
 
-function UI(field) {
-	var fieldUi = new FieldUI(field);
+function UI() {
+	var fieldUi = new FieldUI();
+	var myturnoffset = 0;
 
 	var els = {};
 	this.el = eldiv("maincontainer", [
@@ -165,28 +164,44 @@ function UI(field) {
 
 	this.drawField = function () {
 		fieldUi.draw();
+		fieldUi.drawfield();
+	}
+
+	this.startGame = function (player1, player2) {
+		field = new Field(4, 4, 4);
+		fieldUi.setGame(field, [player1, player2]);
+
+		fieldUi.draw();
+		fieldUi.drawfield();
+	}
+
+	this.draw = function () {
+		toggleclass(els.player1, "hasturn", field.turn == 0);
+		toggleclass(els.player2, "hasturn", field.turn == 1);
 	}
 
 }
 
-function FieldUI(field) {
+function FieldUI() {
+	var field = null;
+	var players = [];
 	var cam = { hor: 0, ver: -Math.PI / 2, rot: 0, fov: 0.6, dist: 500 };
 	var cammatrix = null;
 	var fieldels = [];
+	var playerels = [];
 	var dragdist = 0;
+
+	var els = {};
 
 	var pieceClicked = function (x, y, e) {
 		if (dragdist >= 5) { return;}
 		sendMessage("place " + x + " " + y);
 	}
 
-	var el = this.el = eldiv("field");
-	for (var a in field.fields) {
-		fieldels[a] = eldiv("mark");
-		fieldels[a].onclick = pieceClicked.bind(null, a % field.width, ((a / field.width | 0) % field.depth));
-		if (a < field.width * field.depth) { fieldels[a].classList.add("floor"); }
-		el.appendChild(fieldels[a]);
-	}
+	var el = this.el = eldiv("field", [
+		els.playerroot = eldiv("playerlist"),
+		els.field=eldiv()
+	]);
 
 	//cam dragging
 	el.onmousedown = function (estart) {
@@ -199,11 +214,13 @@ function FieldUI(field) {
 			cam.ver -= (emove.clientY - ylast) / 100;
 			dragdist += Math.abs(emove.clientX - xlast) + Math.abs(emove.clientY - ylast);
 
+			cam.ver = Math.min(Math.PI / 5 * 3, Math.max(-Math.PI / 5 * 3, cam.ver));
+
 			xlast = emove.clientX;
 			ylast = emove.clientY;
 
 			fixcam();
-			draw();
+			drawfield();
 		}
 		var mouseup = function () {
 			window.removeEventListener("mousemove", move);
@@ -214,14 +231,46 @@ function FieldUI(field) {
 	}
 	el.onwheel = function (e) {
 		e.preventDefault();
-		cam.dist += e.deltaY;
+		var d = e.deltaY;
+		if (d > 0) { cam.dist += Math.max(100, d); }
+		if (d < 0) { cam.dist += Math.min(-100, d); }
 		fixcam();
-		draw();
+		drawfield();
 	}
 
-	var draw = this.draw = function () {
+	this.setGame = function (newfield,newplayers) {
+		field = newfield;
+		players = newplayers;
+
+		drawElements();
+		draw();
+		drawfield();
+	}
+
+	var drawElements = function () {
+		//fix the players el
+		playerels = [];
+		elclear(els.playerroot);
+		for (var a in players) {
+			playerels[a] = eldiv("playerdisplay "+(a%2==0?"left":"right")+" player-" + a, [(players[a] == myname ? "me - " : "") + players[a]]);
+			els.playerroot.appendChild(playerels[a]);
+		}
+
+		//fix the field el
+		fieldels = [];
+		elclear(els.field);
+		for (var a in field.fields) {
+			fieldels[a] = eldiv("mark");
+			fieldels[a].onclick = pieceClicked.bind(null, a % field.width, ((a / field.width | 0) % field.depth));
+			if (a < field.width * field.depth) { fieldels[a].classList.add("floor"); }
+			el.appendChild(fieldels[a]);
+		}
+	}
+
+	var drawfield = this.drawfield = function () {
+		if (!field) { return;}
 		var centerx = el.clientWidth / 2;
-		var centery = el.clientHeight / 2;
+		var centery = el.clientHeight / 2 - 50;
 		var size = 100;
 		var spacing = 100;
 		for (var x = 0; x < field.width; x++) {
@@ -254,6 +303,12 @@ function FieldUI(field) {
 		}
 	}
 
+	var draw = this.draw = function () {
+		for (var a in playerels) {
+			toggleclass(playerels[a], "hasturn", a == field.turn);
+		}
+	}
+
 	var fixcam = function () {
 		var m = verticleMatrix(cam.hor, cam.ver, cam.rot, cam.fov, cam.dist);
 		var translate = [
@@ -261,7 +316,7 @@ function FieldUI(field) {
 			0, 0, 1, 0,
 			0, -1, 0, 0,
 			0, 0, 0, 1
-		]
+		];
 		cammatrix = mmpr(translate, m);
 	}
 
@@ -271,19 +326,26 @@ function FieldUI(field) {
 
 
 function verticleMatrix(hor, ver, rot, fov,dist) {
-
-	var initial = [
+	var tr1 = [
 		1, 0, 0, 0,
+		0, Math.cos(ver), -Math.sin(ver), 0,
+		0, Math.sin(ver), Math.cos(ver), 0,
+		0, 0, 0, 1
+	];
+	var tr2 = [
+		Math.cos(hor), 0, Math.sin(hor), 0,
 		0, 1, 0, 0,
+		-Math.sin(hor), 0, Math.cos(hor), 0,
+		0, 0, 0, 1
+	];
+	var tr3 = [
+		Math.cos(rot), -Math.sin(rot), 0, 0,
+		Math.sin(rot), Math.cos(rot), 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1
-	]
+	];
 
-	var tr1 = [1, 0, 0, 0, 0, Math.cos(ver), -Math.sin(ver), 0, 0, Math.sin(ver), Math.cos(ver), 0, 0, 0, 0, 1];
-	var tr2 = [Math.cos(hor), 0, Math.sin(hor), 0, 0, 1, 0, 0, -Math.sin(hor), 0, Math.cos(hor), 0, 0, 0, 0, 1];
-	var tr3 = [Math.cos(rot), -Math.sin(rot), 0, 0, Math.sin(rot), Math.cos(rot), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-
-	var r = mmpr(mmpr(mmpr(initial, tr2), tr1), tr3);
+	var r = mmpr(mmpr(tr2, tr1), tr3);
 	
 	//field of view
 	r[3] = r[2] * fov;
@@ -298,7 +360,6 @@ function verticleMatrix(hor, ver, rot, fov,dist) {
 	//printmatrix(r);
 	//printarray(vmpr([10, 10, 10, 1], r));
 	return r;
-	print
 }
 
 function printarray(arr) {

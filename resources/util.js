@@ -84,3 +84,22 @@ function toggleclass(el, classname, state) {
 	else { el.classList.remove(classname); }
 	return state;
 }
+
+//clears all children from an element
+function elclear(el) {
+	if (typeof el == "string") { el = elid(el); }
+	while (el.firstChild) { el.removeChild(el.firstChild); }
+}
+
+//clears all children from an el an give it new ones
+function elput(el, content) {
+	if (typeof el == "string") { el = elid(el); }
+	elclear(el);
+	el.appendChild(content);
+}
+
+//shorthand function to get an element with given id
+function elid(id, sub) {
+	if (sub) { return id.ownerDocument.getElementById(sub); }
+	else { return document.getElementById(id); }
+}

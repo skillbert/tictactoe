@@ -35,7 +35,7 @@ public class WebSocketProtocol implements SocketProtocol {
 		if (payload.length >= 1 << 16) {
 			throw new RuntimeException("Packet to large to send");
 		}
-		byte[] packet = new byte[4 + (payload.length > 125 ? 2 : 0) + payload.length];
+		byte[] packet = new byte[2 + (payload.length > 125 ? 2 : 0) + payload.length];
 		int i = 0;
 		// write packet the flags
 		packet[i] |= 0b10000000;// fin
@@ -143,7 +143,7 @@ public class WebSocketProtocol implements SocketProtocol {
 		headerstr += "HTTP/1.1 101 Switching Protocols\r\n";
 		headerstr += "Upgrade: websocket\r\n";
 		headerstr += "Connection: Upgrade\r\n";
-		headerstr += "Sec-WebSocket-Accept: " + serverkey + "\r\r";
+		headerstr += "Sec-WebSocket-Accept: " + serverkey + "\r\n";
 
 		con.sendPacket(BasicHttpServer.getResponseBytes(headerstr, ""));
 
