@@ -1,4 +1,4 @@
-///<reference path="/runeappslib.js">
+﻿///<reference path="/runeappslib.js">
 "use strict";
 
 var field = null;
@@ -203,37 +203,94 @@ function FieldUI() {
 		els.field=eldiv()
 	]);
 
-	//cam dragging
-	el.onmousedown = function (estart) {
+	var touchzooming = false;
+	var touchdist = 0;
+	var mousedownel = null;
+	el.ontouchstart = function (e) {
+		e.preventDefault();
+		var touch = e.changedTouches[0];
+		if (touch.identifier != 0) {
+			var t0 = e.touches[0];
+			var t1 = e.touches[1];
+			touchdist = Math.abs(t0.clientX - t1.clientX) + Math.abs(t0.clientY - t1.clientY);
+			touchzooming = true;
+		}
+		else {
+			mousedownel = e.touches[0].target;
+			touchzooming = false;
+			var movecam = startDrag(touch);
+			var move = function (e) {
+				if (touchzooming) {
+					var t0 = e.touches[0];
+					var t1 = e.touches[1];
+					var newdist = Math.abs(t0.clientX - t1.clientX) + Math.abs(t0.clientY - t1.clientY);
+					zoomcam((touchdist - newdist) * 5);
+					touchdist = newdist;
+				}
+				else {
+					movecam(e.touches[0]);
+				}
+			}
+			var end = function (e) {
+				window.removeEventListener("touchmove", move);
+				window.removeEventListener("touchend", end);
+				if (!touchzooming) { dragDone(e); }
+			}
+			window.addEventListener("touchmove", move);
+			window.addEventListener("touchend", end);
+		}
+	}
+
+	el.onmousedown = function (e) {
+		e.preventDefault();
+		mousedownel = e.target;
+		var movecam = startDrag(e);
+		var move = function (e) {
+			movecam(e);
+		}
+		var end = function (e) {
+			window.removeEventListener("mousemove", move);
+			window.removeEventListener("mouseup", end);
+			dragDone(e);
+		}
+		window.addEventListener("mousemove", move);
+		window.addEventListener("mouseup", end);
+	}
+
+	var dragDone = function (e) {
+		if (dragdist <= 5) { mousedownel.click(); }
+		else { e.preventDefault(); }
+	}
+
+	var startDrag = function (startpos) {
 		dragdist = 0;
-		estart.preventDefault();
-		var xlast = estart.clientX;
-		var ylast = estart.clientY;
-		var move = function (emove) {
-			cam.hor += (emove.clientX - xlast) / 100;
-			cam.ver -= (emove.clientY - ylast) / 100;
-			dragdist += Math.abs(emove.clientX - xlast) + Math.abs(emove.clientY - ylast);
+		var targetel = startpos.target;
+		var xlast = startpos.clientX;
+		var ylast = startpos.clientY;
+		var move = function (pos) {
+			cam.hor += (pos.clientX - xlast) / 100;
+			cam.ver -= (pos.clientY - ylast) / 100;
+			dragdist += Math.abs(pos.clientX - xlast) + Math.abs(pos.clientY - ylast);
 
 			cam.ver = Math.min(Math.PI / 5 * 3, Math.max(-Math.PI / 5 * 3, cam.ver));
 
-			xlast = emove.clientX;
-			ylast = emove.clientY;
+			xlast = pos.clientX;
+			ylast = pos.clientY;
 
 			fixcam();
 			drawfield();
 		}
-		var mouseup = function () {
-			window.removeEventListener("mousemove", move);
-			window.removeEventListener("mouseup", mouseup);
-		}
-		window.addEventListener("mousemove", move);
-		window.addEventListener("mouseup", mouseup);
+		return move;
 	}
 	el.onwheel = function (e) {
 		e.preventDefault();
 		var d = e.deltaY;
-		if (d > 0) { cam.dist += Math.max(100, d); }
-		if (d < 0) { cam.dist += Math.min(-100, d); }
+		if (d > 0) { zoomcam(Math.max(100, d)); }
+		if (d < 0) { zoomcam(Math.min(-100, d)); }
+	}
+
+	var zoomcam = function (dist) {
+		cam.dist += dist;
 		fixcam();
 		drawfield();
 	}
