@@ -1,13 +1,13 @@
-///<reference path="/runeappslib.js">
+///<reference path="util.js">
 "use strict";
 
-var field = null;
-var ui = null;
-var con = null;
 var dispaynet = false;
+var con = null;
 var myname = "Anon_" + Math.floor(Math.random() * 1000);
 
-
+var field = null;
+var queued = false;
+var ui = null;
 
 
 
@@ -15,7 +15,6 @@ function start() {
 	ui = new UI();
 	connect();
 	document.body.appendChild(ui.el);
-	ui.drawField();
 	window.onresize = function () { if (ui) { ui.drawField(); } };
 }
 
@@ -24,7 +23,7 @@ function connect() {
 	con = new WebSocket("ws://" + location.hostname + ":12345");
 	con.onerror = e=>ui.showMessage("connection error: " + e);
 	con.onmessage = messageReceived;
-	con.onopen = e=>sendMessage("login " + myname);
+	con.onopen = e=> sendMessage("login " + myname); 
 }
 
 function messageReceived(e){
@@ -32,10 +31,22 @@ function messageReceived(e){
 	if (dispaynet) { ui.showMessage("<< " + message); }
 	var match;
 	if (match = message.match(/^waiting$/)) {
+		field = null;
+		queued = true;
+		ui.drawLobby();
+		ui.drawField();
 		ui.showMessage("Waiting for opponent...");
 	}
+	if (match = message.match(/^lobby$/)) {
+		field = null;
+		queued = false;
+		ui.drawField();
+		ui.drawLobby();
+		ui.showMessage("Now in the lobby");
+	}
 	if (match = message.match(/^startGame (\w+) (\w+)$/)) {
-		ui.startGame(match[1], match[2]);
+		field = new Field([match[1],match[2]],4, 4, 4);
+		ui.startGame();
 		ui.showMessage("New game started. " + match[1] + " VS " + match[2]);
 		ui.showMessage(match[1] + "'s turn");
 	}
@@ -67,8 +78,9 @@ function sendMessage(mes) {
 	con.send(mes);
 }
 
-function Field(w,d,h) {
+function Field(players,w,d,h) {
 	this.fields = [];
+	this.players = players;
 	this.width = w;
 	this.depth = d;
 	this.height = h;
@@ -118,11 +130,13 @@ function Field(w,d,h) {
 
 function UI() {
 	var fieldUi = new FieldUI();
+	var lobbyUi = new LobbyUi();
 	var myturnoffset = 0;
 
 	var els = {};
 	this.el = eldiv("maincontainer", [
 		fieldUi.el,
+		lobbyUi.el,
 		eldiv("messagecontainer", [
 			els.messagebox = eldiv("messagebox"),
 			eldiv("inputcontainer", [
@@ -162,29 +176,51 @@ function UI() {
 		els.messagebox.scrollTop = els.messagebox.scrollHeight;
 	}
 
+	this.startGame = function () {
+		fieldUi.startGame();
+	}
+
 	this.drawField = function () {
 		fieldUi.draw();
-		fieldUi.drawfield();
+		fieldUi.drawField();
 	}
 
-	this.startGame = function (player1, player2) {
-		field = new Field(4, 4, 4);
-		fieldUi.setGame(field, [player1, player2]);
+	this.drawLobby = function () {
+		lobbyUi.el.style.display = field ? "none" : "unset";
+		if (field) {
+			lobbyUi.draw();
+		}
+	}
+}
 
-		fieldUi.draw();
-		fieldUi.drawfield();
+function LobbyUi() {
+	var els = {};
+	var el = this.el = eldiv("lobby", [
+		eldiv("queueoptions", [
+			els.queue = eldiv("queueopt"),
+			els.bot1 = eldiv("queueopt", ["Medium bot"]),
+			els.leave=eldiv("queueopt",["Leave game"])
+		]),
+		eldiv("playerlist")
+	]);
+
+	var draw = this.draw = function () {
+		els.queue.innerText = queued ? "Leave queue" : "Queue VS player";
+	}
+	els.queue.onclick = function () {
+		sendMessage(queued ? "unqueue" : "queue");
+	}
+	els.bot1.onclick = function () {
+		sendMessage("bot simple");
+	}
+	els.leave.onclick = function () {
+		sendMessage("leaveGame");
 	}
 
-	this.draw = function () {
-		toggleclass(els.player1, "hasturn", field.turn == 0);
-		toggleclass(els.player2, "hasturn", field.turn == 1);
-	}
-
+	draw();
 }
 
 function FieldUI() {
-	var field = null;
-	var players = [];
 	var cam = { hor: 0, ver: -Math.PI / 2, rot: 0, fov: 0.6, dist: 500 };
 	var cammatrix = null;
 	var fieldels = [];
@@ -258,7 +294,9 @@ function FieldUI() {
 
 	var dragDone = function (e) {
 		e.preventDefault();
-		if (dragdist <= 5) { mousedownel.clickfunc(); }
+		if (dragdist <= 5 && mousedownel.clickfunc) {
+			mousedownel.clickfunc();
+		}
 	}
 
 	var startDrag = function (startpos) {
@@ -277,7 +315,7 @@ function FieldUI() {
 			ylast = pos.clientY;
 
 			fixcam();
-			drawfield();
+			drawField();
 		}
 		return move;
 	}
@@ -291,24 +329,21 @@ function FieldUI() {
 	var zoomcam = function (dist) {
 		cam.dist += dist;
 		fixcam();
-		drawfield();
+		drawField();
 	}
 
-	this.setGame = function (newfield,newplayers) {
-		field = newfield;
-		players = newplayers;
-
+	this.startGame = function () {
 		drawElements();
 		draw();
-		drawfield();
+		drawField();
 	}
 
 	var drawElements = function () {
 		//fix the players el
 		playerels = [];
 		elclear(els.playerroot);
-		for (var a in players) {
-			playerels[a] = eldiv("playerdisplay "+(a%2==0?"left":"right")+" player-" + a, [(players[a] == myname ? "me - " : "") + players[a]]);
+		for (var a in field.players) {
+			playerels[a] = eldiv("playerdisplay "+(a%2==0?"left":"right")+" player-" + a, [(field.players[a] == myname ? "me - " : "") + field.players[a]]);
 			els.playerroot.appendChild(playerels[a]);
 		}
 
@@ -319,11 +354,11 @@ function FieldUI() {
 			fieldels[a] = eldiv("mark");
 			fieldels[a].clickfunc = pieceClicked.bind(null, a % field.width, ((a / field.width | 0) % field.depth));
 			if (a < field.width * field.depth) { fieldels[a].classList.add("floor"); }
-			el.appendChild(fieldels[a]);
+			els.field.appendChild(fieldels[a]);
 		}
 	}
 
-	var drawfield = this.drawfield = function () {
+	var drawField = this.drawField = function () {
 		if (!field) { return;}
 		var centerx = el.clientWidth / 2;
 		var centery = el.clientHeight / 2 - 50;
@@ -360,8 +395,14 @@ function FieldUI() {
 	}
 
 	var draw = this.draw = function () {
-		for (var a in playerels) {
-			toggleclass(playerels[a], "hasturn", a == field.turn);
+		if (field) {
+			for (var a in playerels) {
+				toggleclass(playerels[a], "hasturn", a == field.turn);
+			}
+		}
+		else {
+			elclear(els.playerroot);
+			elclear(els.field);
 		}
 	}
 

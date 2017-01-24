@@ -11,11 +11,11 @@ import common.Player;
 public abstract class AIPlayer implements Player {
 	protected Game game;
 	protected ArrayList<int[]> wincons;
-	private int mark;
+	protected int myMark;
 	private String name;
 
 	public AIPlayer(String name, int mark) {
-		this.mark = mark;
+		this.myMark = mark;
 		this.name = name;
 	}
 
@@ -33,7 +33,7 @@ public abstract class AIPlayer implements Player {
 
 	@Override
 	public int getMark() {
-		return mark;
+		return myMark;
 	}
 
 	@Override

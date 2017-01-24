@@ -12,8 +12,9 @@ import java.util.stream.IntStream;
  * @version $0.1$
  */
 public class Board {
-	public static final int DIM = 4;
 	public static final int INVALID_INDEX = -1;
+	public final int DIM = 4;
+	public final int winLength = DIM;
 	private ArrayList<int[]> wincons;
 	private int[] fields;
 
@@ -115,7 +116,7 @@ public class Board {
 	 * @return
 	 */
 	public Point position(int index) {
-		return new Point(index % DIM, (index / DIM) % DIM);
+		return new Point((index / DIM) % DIM, index % DIM);
 	}
 
 	/**
@@ -226,6 +227,10 @@ public class Board {
 
 	public ArrayList<int[]> getWinConditions() {
 		return wincons;
+	}
+
+	public int getWinLength() {
+		return DIM;
 	}
 
 	@Override

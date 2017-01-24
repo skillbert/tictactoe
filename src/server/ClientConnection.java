@@ -3,7 +3,7 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
-import AI.RandomAi;
+import AI.SimpleAI;
 import common.AsyncSocket;
 import common.Mark;
 import common.Player;
@@ -60,6 +60,14 @@ public class ClientConnection {
 			queueGame();
 			break;
 
+		case "unqueue":
+			unQueueGame();
+			break;
+
+		case "leaveGame":
+			leaveGame();
+			break;
+
 		case "login":
 			if (parts.length < 2) {
 				sendString("error errorMessage No name specified");
@@ -89,10 +97,21 @@ public class ClientConnection {
 		case "bot":
 			ArrayList<Player> players = new ArrayList<>();
 			players.add(new RemotePlayer(this, Mark.RED));
-			players.add(new RandomAi("Stupid_bot", Mark.YELLOW));
+			players.add(new SimpleAI("OK_Bot", Mark.YELLOW));
 			server.startGame(players);
 
 		}
+	}
+
+	private void leaveGame() {
+		if (state != SessionState.ingame) {
+			showModalMessage("You need to be in a game to leave one.");
+			return;
+		}
+		state = SessionState.lobby;
+		setPlayer(null);
+		sendString("lobby");
+		// TODO tell our opponent about it, can't with protocol
 	}
 
 	private void commitMove(int x, int y) {
@@ -112,6 +131,16 @@ public class ClientConnection {
 		state = SessionState.queued;
 		sendString("waiting");
 		server.findQueue();
+	}
+
+	public void unQueueGame() {
+		if (state != SessionState.queued) {
+			showModalMessage("You need to be queued in order to leave the queue");
+			return;
+		}
+		state = SessionState.lobby;
+		// TODO non-standard protocol
+		sendString("lobby");
 	}
 
 	private void setName(String name) {
