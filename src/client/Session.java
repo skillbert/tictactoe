@@ -140,8 +140,8 @@ public class Session extends Observable {
 
 	private void startGame(String playername1, String playername2) {
 		ArrayList<Player> players = new ArrayList<>();
-		players.add(new PeerPlayer(playername1, Mark.fromInt(0)));
-		players.add(new PeerPlayer(playername2, Mark.fromInt(1)));
+		players.add(new PeerPlayer(playername1, 0));
+		players.add(new PeerPlayer(playername2, 1));
 		currentGame = new Game(players);
 		currentGame.startGame();
 

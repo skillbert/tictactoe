@@ -1,26 +1,26 @@
 package common;
 
-public enum Mark {
-	EMPTY, RED, YELLOW;
+public class Mark {
+	public static final int EMPTY = -1;
+	public static final int RED = 0;
+	public static final int YELLOW = 1;
 
-	// TODO maybe switch to ints altogether
-	public static Mark fromInt(int i) {
-		switch (i) {
-		case 0:
-			return Mark.RED;
-		case 1:
-			return Mark.YELLOW;
+
+	public static String getString(int mark) {
+		switch (mark) {
+		case EMPTY:
+			return "empty";
+		case RED:
+			return "red";
+		case YELLOW:
+			return "yellow";
+		default:
+			return "unknown";
 		}
-		throw new RuntimeException("Invalid mark number " + i);
 	}
 
-	@Override
-	public String toString() {
-		return this.name().toLowerCase();
-	}
-
-	public String getMarkString() {
-		switch (this) {
+	public static String getMarkString(int mark) {
+		switch (mark) {
 		case EMPTY:
 			return " ";
 		case RED:

@@ -1,5 +1,6 @@
 package common;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -13,8 +14,8 @@ import java.util.stream.IntStream;
 public class Board {
 	public static final int DIM = 4;
 	public static final int INVALID_INDEX = -1;
-	public ArrayList<int[]> wincons;
-	private Mark[] fields;
+	private ArrayList<int[]> wincons;
+	private int[] fields;
 
 	/**
 	 * fields represent the board. column/row to index. c1 c2 c3 c4 r1 0 4 8 12
@@ -25,7 +26,7 @@ public class Board {
 	 * to add 16 for each layer on top of the base one.
 	 */
 	public Board() {
-		fields = new Mark[DIM * DIM * DIM];
+		fields = new int[DIM * DIM * DIM];
 		Arrays.fill(fields, Mark.EMPTY);
 
 		initializeWincons();
@@ -108,6 +109,16 @@ public class Board {
 	}
 
 	/**
+	 * Gets the x,y position of a field with the given index
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public Point position(int index) {
+		return new Point(index % DIM, (index / DIM) % DIM);
+	}
+
+	/**
 	 * Returns the index where a piece will fall if inserted at the given row
 	 * and column, returns INVALID_INDEX in case the column is full
 	 * 
@@ -145,7 +156,7 @@ public class Board {
 	 * @param index
 	 * @return Mark
 	 */
-	public Mark getField(int index) {
+	public int getField(int index) {
 		return fields[index];
 	}
 
@@ -155,7 +166,7 @@ public class Board {
 	 * @param index
 	 * @param m
 	 */
-	public void setField(int index, Mark m) {
+	public void setField(int index, int m) {
 		fields[index] = m;
 	}
 
@@ -183,9 +194,9 @@ public class Board {
 	 * 
 	 * @return the winning mark or Mark.Empty if there is no winner
 	 */
-	public Mark findWinner() {
+	public int findWinner() {
 		for (int[] wincon : wincons) {
-			Mark mark = fields[wincon[0]];
+			int mark = fields[wincon[0]];
 			if (mark == Mark.EMPTY) {
 				continue;
 			}
@@ -213,6 +224,10 @@ public class Board {
 		return DIM;
 	}
 
+	public ArrayList<int[]> getWinConditions() {
+		return wincons;
+	}
+
 	@Override
 	public String toString() {
 		String str = "";
@@ -221,7 +236,7 @@ public class Board {
 			for (int j = 0; j < DIM; j++) {
 				str += "| ";
 				for (int k = 0; k < DIM; k++) {
-					str += getField(index(i, j, k)).getMarkString();
+					str += Mark.getMarkString(getField(index(i, j, k)));
 				}
 				str += " ";
 			}

@@ -7,7 +7,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
 import common.Game;
-import common.Mark;
 import common.Player;
 import common.Protocol;
 import common.RemotePlayer;
@@ -86,7 +85,7 @@ public class Server {
 		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons.size(); offset += Game.NUMBER_PLAYERS) {
 			ArrayList<Player> players = new ArrayList<>();
 			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
-				players.add(new RemotePlayer(cons.get(offset + i), Mark.fromInt(i)));
+				players.add(new RemotePlayer(cons.get(offset + i), i));
 			}
 			startGame(players);
 		}

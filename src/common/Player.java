@@ -10,7 +10,7 @@ public abstract interface Player extends Observer {
 	 * @return
 	 */
 	@Deprecated
-	public Mark getMark();
+	public int getMark();
 
 	/**
 	 * Used to display a message to the player

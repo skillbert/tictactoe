@@ -2,14 +2,14 @@ package client;
 
 import java.util.Observable;
 
-import common.Mark;
+import common.Game;
 import common.Player;
 
 public class PeerPlayer implements Player {
 	private String name;
-	private Mark mark;
+	private int mark;
 
-	public PeerPlayer(String name, Mark mark) {
+	public PeerPlayer(String name, int mark) {
 		this.name = name;
 		this.mark = mark;
 	}
@@ -28,11 +28,15 @@ public class PeerPlayer implements Player {
 	}
 
 	@Override
-	public Mark getMark() {
+	public int getMark() {
 		return mark;
 	}
 
 	@Override
 	public void showModalMessage(String message) {
+	}
+
+	@Override
+	public void setGame(Game game) {
 	}
 }

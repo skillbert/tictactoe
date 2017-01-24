@@ -47,7 +47,7 @@ public class Game extends Observable {
 		lastmove = new Point(column, row);
 		turn++;
 
-		Mark winmark = board.findWinner();
+		int winmark = board.findWinner();
 		if (winmark != Mark.EMPTY) {
 			// Player winner = players.stream().filter(p -> p.getMark() ==
 			// winmark).findAny().get();

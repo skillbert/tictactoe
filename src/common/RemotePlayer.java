@@ -8,11 +8,11 @@ import server.ClientConnection;
 
 public class RemotePlayer implements Player {
 	private ClientConnection connection;
-	private Mark mark;
+	private int mark;
 	private Game game;
 
 	// TODO merge this into ClientConnection
-	public RemotePlayer(ClientConnection connection, Mark mark) {
+	public RemotePlayer(ClientConnection connection, int mark) {
 		this.connection = connection;
 		this.mark = mark;
 		connection.setPlayer(this);
@@ -24,7 +24,7 @@ public class RemotePlayer implements Player {
 	}
 
 	@Override
-	public Mark getMark() {
+	public int getMark() {
 		return mark;
 	}
 
