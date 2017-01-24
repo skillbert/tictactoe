@@ -52,6 +52,7 @@ public class RemotePlayer implements Player {
 			for (Player p : players) {
 				playerstr += " " + p.getName();
 			}
+			connection.setState(SessionState.ingame);
 			connection.sendString("startGame" + playerstr);
 			break;
 		}
@@ -65,6 +66,7 @@ public class RemotePlayer implements Player {
 		return game;
 	}
 
+	@Override
 	public void setGame(Game game) {
 		this.game = game;
 		game.addObserver(this);

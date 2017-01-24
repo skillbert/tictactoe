@@ -27,6 +27,7 @@ public class BasicHttpServer {
 			addPage("/", new String(Files.readAllBytes(Paths.get("resources/index.html"))));
 			addPage("/scripts.js", new String(Files.readAllBytes(Paths.get("resources/scripts.js"))));
 			addPage("/util.js", new String(Files.readAllBytes(Paths.get("resources/util.js"))));
+			addPage("/icon.png", new String(Files.readAllBytes(Paths.get("resources/icon.png"))));
 		} catch (IOException e) {
 			System.out.println("Failed to load http files");
 			e.printStackTrace();

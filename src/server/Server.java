@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import common.Game;
 import common.Mark;
+import common.Player;
 import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
@@ -83,7 +84,7 @@ public class Server {
 		}
 		System.out.println("total queued: " + cons.size());
 		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons.size(); offset += Game.NUMBER_PLAYERS) {
-			ArrayList<RemotePlayer> players = new ArrayList<>();
+			ArrayList<Player> players = new ArrayList<>();
 			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
 				players.add(new RemotePlayer(cons.get(offset + i), Mark.fromInt(i)));
 			}
@@ -91,12 +92,11 @@ public class Server {
 		}
 	}
 
-	public void startGame(ArrayList<RemotePlayer> players) {
-		System.out.println("Staring game with " + players.get(0) + ", " + players.get(1));
+	public void startGame(ArrayList<Player> players) {
+		System.out.println("Starting game with " + players.get(0) + ", " + players.get(1));
 		Game game = new Game(players);
-		for (RemotePlayer p : players) {
+		for (Player p : players) {
 			p.setGame(game);
-			p.getClientConnection().setState(SessionState.ingame);
 		}
 		game.startGame();
 	}

@@ -109,11 +109,11 @@ public class Board {
 
 	/**
 	 * Returns the index where a piece will fall if inserted at the given row
-	 * and column, returns -1 in case the column is full
+	 * and column, returns INVALID_INDEX in case the column is full
 	 * 
 	 * @param row
 	 * @param column
-	 * @return the index of the field or -1 if the column is full
+	 * @return the index of the field or INVALID_INDEX if the column is full
 	 */
 	public int indexFromColumn(int row, int column) {
 		for (int y = 0; y < DIM; y++) {
@@ -207,6 +207,10 @@ public class Board {
 	 */
 	public void reset() {
 		Arrays.fill(fields, Mark.EMPTY);
+	}
+
+	public int getSize() {
+		return DIM;
 	}
 
 	@Override

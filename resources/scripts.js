@@ -1,4 +1,4 @@
-﻿///<reference path="/runeappslib.js">
+///<reference path="/runeappslib.js">
 "use strict";
 
 var field = null;
@@ -84,7 +84,7 @@ function Field(w,d,h) {
 				return;
 			}
 		}
-		qw("couldn't place piece");
+		console.log("couldn't place piece");
 	}
 
 	this.setMark = function (index, mark) {
@@ -194,7 +194,6 @@ function FieldUI() {
 	var els = {};
 
 	var pieceClicked = function (x, y, e) {
-		if (dragdist >= 5) { return;}
 		sendMessage("place " + x + " " + y);
 	}
 
@@ -258,8 +257,8 @@ function FieldUI() {
 	}
 
 	var dragDone = function (e) {
-		if (dragdist <= 5) { mousedownel.click(); }
-		else { e.preventDefault(); }
+		e.preventDefault();
+		if (dragdist <= 5) { mousedownel.clickfunc(); }
 	}
 
 	var startDrag = function (startpos) {
@@ -318,7 +317,7 @@ function FieldUI() {
 		elclear(els.field);
 		for (var a in field.fields) {
 			fieldels[a] = eldiv("mark");
-			fieldels[a].onclick = pieceClicked.bind(null, a % field.width, ((a / field.width | 0) % field.depth));
+			fieldels[a].clickfunc = pieceClicked.bind(null, a % field.width, ((a / field.width | 0) % field.depth));
 			if (a < field.width * field.depth) { fieldels[a].classList.add("floor"); }
 			el.appendChild(fieldels[a]);
 		}
@@ -421,24 +420,24 @@ function verticleMatrix(hor, ver, rot, fov,dist) {
 
 function printarray(arr) {
 	var size = arr.length;
-	qw("printing array (" + size + ")");
+	console.log("printing array (" + size + ")");
 	var str = "";
 	for (var b = 0; b < size; b++) {
 		var v = arr[b];
 		str += (v < 0 ? "" : " ") + v.toFixed(2) + "\t";
 	}
-	qw(str);
+	console.log(str);
 }
 
 function printmatrix(m) {
 	var size = Math.sqrt(m.length);
-	qw("printing matrix (" + size + "x" + size + ")");
+	console.log("printing matrix (" + size + "x" + size + ")");
 	for (var a = 0; a < size; a++) {
 		var str = "";
 		for (var b = 0; b < size; b++) {
 			var v=m[a * size + b];
 			str += (v < 0 ? "" : " ") + v.toFixed(2) + "\t";
 		}
-		qw(str);
+		console.log(str);
 	}
 }

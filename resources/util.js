@@ -1,4 +1,4 @@
-﻿//copied from my personal util library
+//copied from my personal util library
 
 //shorthand to create an element of the given class, properties and children
 function eldiv(strClass, objAttr, arrayChildren) {

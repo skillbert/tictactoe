@@ -57,6 +57,9 @@ public class Game extends Observable {
 		}
 		setChanged();
 		notifyObservers(EventType.placed);
+		if (winmark == Mark.EMPTY) {
+			getTurn().obtainTurn();
+		}
 	}
 
 	public Player getTurn() {
@@ -89,6 +92,10 @@ public class Game extends Observable {
 
 	public static enum EventType {
 		started, placed
+	}
+
+	public Board getBoard() {
+		return board;
 	}
 
 	@Override

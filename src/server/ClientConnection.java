@@ -1,9 +1,13 @@
 package server;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.ArrayList;
 
+import AI.RandomAi;
 import common.AsyncSocket;
+import common.Mark;
 import common.Player;
+import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
 import httpServer.BasicHttpServer;
@@ -81,6 +85,13 @@ public class ClientConnection {
 			}
 			commitMove(x, y);
 			break;
+
+		case "bot":
+			ArrayList<Player> players = new ArrayList<>();
+			players.add(new RemotePlayer(this, Mark.RED));
+			players.add(new RandomAi("Stupid_bot", Mark.YELLOW));
+			server.startGame(players);
+
 		}
 	}
 
@@ -125,7 +136,10 @@ public class ClientConnection {
 		this.name = name;
 		state = SessionState.lobby;
 
-		queueGame();
+		// TODO the standard requires us to instantly join the queue
+		if (Protocol.followStandards) {
+			queueGame();
+		}
 	}
 
 	public void disconnect() {
