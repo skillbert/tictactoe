@@ -19,8 +19,12 @@ public class Board {
 	private int[] fields;
 
 	/**
-	 * fields represent the board. column/row to index. c1 c2 c3 c4 r1 0 4 8 12
-	 * r2 1 5 9 13 r3 2 6 10 14 r4 3 7 11 15
+	 * fields represent the board. column/row to index. 
+	 * c1 c2 c3 c4 
+	 * r1 0 4 8 12
+	 * r2 1 5 9 13 
+	 * r3 2 6 10 14 
+	 * r4 3 7 11 15
 	 * 
 	 * DIM of these 2D grids are stacked on top of each other to achieve a 3D
 	 * board to get the index of a certain row and column combination you have
@@ -37,7 +41,7 @@ public class Board {
 	 * Returns a new Board object with the same fields marked as the current
 	 * board
 	 * 
-	 * @return
+	 * @return deepcopy of the current Board object
 	 */
 	public Board deepCopy() {
 		Board board = new Board();

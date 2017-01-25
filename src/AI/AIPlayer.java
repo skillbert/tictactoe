@@ -14,6 +14,13 @@ public abstract class AIPlayer implements Player {
 	protected int myMark;
 	private String name;
 
+	/**
+	 * Initializes an AIPlayer with name and mark
+	 * @param name
+	 *            AIPlayer name to use
+	 * @param mark
+	 *            AIPlayer mark to use
+	 */
 	public AIPlayer(String name, int mark) {
 		this.myMark = mark;
 		this.name = name;
@@ -51,5 +58,11 @@ public abstract class AIPlayer implements Player {
 	public void update(Observable o, Object arg) {
 	}
 
+	/**
+	 * Performs the calculations to determine the move to make and returns the move
+	 * @param board
+	 *             Board object to use
+	 * @return the move to make as a Point object 
+	 */
 	public abstract Point thinkMove(Board board);
 }
