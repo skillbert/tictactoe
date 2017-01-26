@@ -239,10 +239,10 @@ public class Board {
 
 	@Override
 	public String toString() {
-		String str = "";
+		String str = "      1      2      3      4";
 		for (int i = 0; i < DIM; i++) {
-			str += "\n " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
-			str += String.valueOf(i+1);
+			str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
+			str += String.valueOf(i+1) + " ";
 			for (int j = 0; j < DIM; j++) {
 				str += "| ";
 				for (int k = 0; k < DIM; k++) {
@@ -252,7 +252,7 @@ public class Board {
 			}
 			str += "| ";
 		}
-		str += "\n " + new String(new char[DIM]).replace("\0", "+------") + "+ \n";
+		str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n";
 		return str;
 	}
 }
