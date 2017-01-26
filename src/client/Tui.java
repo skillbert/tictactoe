@@ -21,7 +21,10 @@ public class Tui implements Ui {
 
 	@Override
 	public void run() {
-		out.println("hello to tictactoe");
+		out.println("Connect 3D");
+		out.println("====================");
+        out.println("\nWelcome, the available commands are:\n");
+		printHelp();
 		while (true) {
 			parseInput(in.nextLine());
 		}
@@ -33,7 +36,7 @@ public class Tui implements Ui {
 		switch (parts[0]) {
 		case "connect":
 			if (parts.length < 2) {
-				out.println("Usage: login <host> [port]");
+				out.println("Usage: connect <host> [port]");
 				break;
 			}
 			if (session.getState() != SessionState.disconnected) {
@@ -103,14 +106,16 @@ public class Tui implements Ui {
 				out.println("invalid number format");
 				break;
 			}
-			session.commitMove(x, y);
+			if (x <= 4 && y <= 4) { // 4 because user input 1-4 
+		         session.commitMove(x-1, y-1); // -1 because 0 indexed vs. 1 indexed as presented to the user.
+			} else {
+			    out.println("Invalid input, make sure 1 <= x <= 4 and 1 <= y <= 4");
+			}
 			break;
 
 		default:
-			out.println("command not recognised, the commands are:");
-			out.println("login <host> [port]");
-			out.println("login <name>");
-			out.println("queue");
+	        out.println("Command not recognised, the commands are:");
+		    printHelp();
 			break;
 		}
 	}
@@ -160,6 +165,14 @@ public class Tui implements Ui {
 	private void gameChanged() {
 		Game game = session.getGame();
 		out.println(game);
+	}
+	
+	private void printHelp() {
+        out.println("connect <host> [port]");
+        out.println("login <name>");
+        out.println("queue");
+        out.println("place <x> <y>");
+        out.println("test");
 	}
 }
 
