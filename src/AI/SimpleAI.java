@@ -7,7 +7,7 @@ import common.Board;
 import common.Mark;
 
 /**
- * This algorith assigns scores to every spot in the grid. Points are given for
+ * This algorithm assigns scores to every spot in the grid. Points are given for
  * blocking other player's rows and improving own rows
  * 
  * @author Wilbert
