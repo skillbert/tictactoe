@@ -6,10 +6,12 @@ import java.util.Observable;
 import java.util.Optional;
 
 import common.AsyncSocket;
+import common.DirectProtocol;
 import common.Game;
 import common.Mark;
 import common.Player;
 import common.SessionState;
+import common.SocketProtocol;
 
 public class Session extends Observable {
 
@@ -18,6 +20,7 @@ public class Session extends Observable {
 	private Game currentGame;
 	private Ui ui;
 	private PeerPlayer myPlayer;
+	private SocketProtocol protocol;
 
 	public Session() {
 		setState(SessionState.disconnected);
@@ -44,9 +47,11 @@ public class Session extends Observable {
 		setState(SessionState.connecting);
 		sock = new AsyncSocket();
 		sock.onClose(() -> connectionClosed());
-		sock.onMessage(str -> parseMessage(str));
+		sock.onPacket(packet -> parseMessage(packet));
 		sock.onConnect(() -> connected());
 		sock.onConnectFail(() -> connectFailed());
+		protocol = new DirectProtocol();
+		protocol.setSocket(sock);
 		try {
 			sock.connect(host, port);
 		} catch (IOException ex) {
@@ -56,12 +61,12 @@ public class Session extends Observable {
 	}
 
 	public void commitMove(int x, int y) {
-		sock.sendString("place " + x + " " + y);
+		sendMessage("place " + x + " " + y);
 	}
 
 	public void login(String name) {
 		myPlayer.setName(name);
-		sock.sendString("login " + name);
+		sendMessage("login " + name);
 	}
 
 	public void queueGame() {
@@ -70,7 +75,11 @@ public class Session extends Observable {
 			return;
 		}
 
-		sock.sendString("queue");
+		sendMessage("queue");
+	}
+
+	private void sendMessage(String message) {
+		sock.sendPacket(protocol.textPacket(message));
 	}
 
 	private void connectionClosed() {
@@ -83,7 +92,11 @@ public class Session extends Observable {
 		setState(SessionState.disconnected);
 	}
 
-	private void parseMessage(String message) {
+	private void parseMessage(byte[] packet) {
+		String message = protocol.parsePacket(packet);
+		if (message == null) {
+			return;
+		}
 		// TODO add some sort of protocol error handling if the server doesn't
 		// behave
 		String[] parts = message.split(" ");
@@ -98,6 +111,10 @@ public class Session extends Observable {
 
 		case "waiting":
 			setState(SessionState.queued);
+			break;
+
+		case "lobby":
+			setState(SessionState.lobby);
 			break;
 
 		case "placed":

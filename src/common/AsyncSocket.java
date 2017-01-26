@@ -17,7 +17,6 @@ import java.util.Queue;
 public class AsyncSocket {
 	private static final int BUFFERSIZE = 2048;
 
-	private SocketProtocol protocol;
 	private AsynchronousSocketChannel channel;
 	private Queue<byte[]> writequeue = new LinkedList<>();
 	private boolean iswriting = false;
@@ -27,14 +26,13 @@ public class AsyncSocket {
 	private Callback0 closeCb;
 	private Callback0 connectedCb;
 	private Callback0 connectFailedCb;
-	private Callback1<String> messageCb;
+	private Callback1<byte[]> packetCb;
 
 	/**
 	 * Creates an idle AsyncSocket object. Call the connect function after
 	 * setting the event functions to connect to a server
 	 */
 	public AsyncSocket() {
-		setProtocol(new DirectProtocol());
 	}
 
 	/**
@@ -46,14 +44,6 @@ public class AsyncSocket {
 	 */
 	public AsyncSocket(AsynchronousSocketChannel channel) {
 		this.channel = channel;
-		setProtocol(new DirectProtocol());
-	}
-
-
-
-	public void setProtocol(SocketProtocol protocol) {
-		this.protocol = protocol;
-		protocol.setSocket(this);
 	}
 
 	/**
@@ -88,16 +78,6 @@ public class AsyncSocket {
 			connectFailedCb.run();
 		}
 		close();
-	}
-
-	/**
-	 * Converts the string into a series of bytes, then queues and flushes them
-	 * 
-	 * @param str
-	 *            the string to send
-	 */
-	public void sendString(String str) {
-		sendPacket(protocol.textPacket(str));
 	}
 
 	/**
@@ -146,8 +126,8 @@ public class AsyncSocket {
 	 *            This function is called with one string argument whenever the
 	 *            socket receives a message
 	 */
-	public void onMessage(Callback1<String> cb) {
-		messageCb = cb;
+	public void onPacket(Callback1<byte[]> cb) {
+		packetCb = cb;
 		startReading();
 	}
 
@@ -216,11 +196,8 @@ public class AsyncSocket {
 		readbuffer.flip();
 		byte[] bytes = new byte[length];
 		readbuffer.get(bytes);
-		String message = protocol.parsePacket(bytes);
-		if (message != null) {
-			if (messageCb != null) {
-				messageCb.run(message);
-			}
+		if (packetCb != null) {
+			packetCb.run(bytes);
 		}
 		readbuffer.clear();
 		isreading = false;

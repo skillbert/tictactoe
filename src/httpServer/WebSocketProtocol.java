@@ -119,8 +119,9 @@ public class WebSocketProtocol implements SocketProtocol {
 	}
 
 
-	public static WebSocketProtocol tryConnectWebsocket(String packet, AsyncSocket con) {
-		String header = packet.split("\r\n\r\n")[0];
+	public static WebSocketProtocol tryConnectWebsocket(byte[] packet, AsyncSocket con) {
+		String packetText = new String(packet, StandardCharsets.US_ASCII);
+		String header = packetText.split("\r\n\r\n")[0];
 
 		// check if we have the upgrade header
 		Pattern upreg = Pattern.compile("^Upgrade:\\s+websocket\\s*$", Pattern.MULTILINE);
@@ -145,9 +146,11 @@ public class WebSocketProtocol implements SocketProtocol {
 		headerstr += "Connection: Upgrade\r\n";
 		headerstr += "Sec-WebSocket-Accept: " + serverkey + "\r\n";
 
-		con.sendPacket(BasicHttpServer.getResponseBytes(headerstr, ""));
+		con.sendPacket(BasicHttpServer.getResponseBytes(headerstr, new byte[0]));
 
-		return new WebSocketProtocol();
+		WebSocketProtocol protocol = new WebSocketProtocol();
+		protocol.setSocket(con);
+		return protocol;
 	}
 }
 

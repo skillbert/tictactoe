@@ -19,15 +19,16 @@ import common.AsyncSocket;
  */
 public class BasicHttpServer {
 
-	private static HashMap<String, String> pages = new HashMap<>();
-
+	private static HashMap<String, HttpPage> pages = new HashMap<>();
+	private static String MIME_TEXT = "text/html; charset=utf-8";
+	private static String MIME_PNG = "image/png";
 
 	static {
 		try {
-			addPage("/", new String(Files.readAllBytes(Paths.get("resources/index.html"))));
-			addPage("/scripts.js", new String(Files.readAllBytes(Paths.get("resources/scripts.js"))));
-			addPage("/util.js", new String(Files.readAllBytes(Paths.get("resources/util.js"))));
-			addPage("/icon.png", new String(Files.readAllBytes(Paths.get("resources/icon.png"))));
+			addPage("/", new HttpPage(MIME_TEXT, Files.readAllBytes(Paths.get("resources/index.html"))));
+			addPage("/scripts.js", new HttpPage(MIME_TEXT, Files.readAllBytes(Paths.get("resources/scripts.js"))));
+			addPage("/util.js", new HttpPage(MIME_TEXT, Files.readAllBytes(Paths.get("resources/util.js"))));
+			addPage("/icon.png", new HttpPage(MIME_PNG, Files.readAllBytes(Paths.get("resources/icon.png"))));
 		} catch (IOException e) {
 			System.out.println("Failed to load http files");
 			e.printStackTrace();
@@ -41,8 +42,9 @@ public class BasicHttpServer {
 	 * @param packet
 	 * @return returns true if the packet was a http request
 	 */
-	public static boolean tryRespondGET(String packet, AsyncSocket con) {
-		String header = packet.split("\r\n\r\n")[0];
+	public static boolean tryRespondGET(byte[] packet, AsyncSocket con) {
+		String packetText = new String(packet, StandardCharsets.US_ASCII);
+		String header = packetText.split("\r\n\r\n")[0];
 
 		String[] headers = header.split("\r\n");
 		Pattern reg = Pattern.compile("^GET ([^ ]+) HTTP/1\\.1$");
@@ -54,17 +56,18 @@ public class BasicHttpServer {
 
 		System.out.println("HTTP GET request: " + path);
 		if (pages.containsKey(path)) {
-			String pagestr = pages.get(path);
+			HttpPage page = pages.get(path);
 			String headerstr = "";
 			headerstr += "HTTP/1.1 200 OK\r\n";
 			// TODO support other mime types
-			headerstr += "Content-Type: text/html; charset=utf-8\r\n";
-			byte[] response = getResponseBytes(headerstr, pagestr);
+			headerstr += "Content-Type: " + page.getMime() + "\r\n";
+			byte[] response = getResponseBytes(headerstr, page.getBytes());
 			con.sendPacket(response);
 		} else {
 			String headerstr = "";
 			headerstr += "HTTP/1.1 404 Not Found\r\n";
-			byte[] response = getResponseBytes(headerstr, "<h1>404 - Not Found</h1>");
+			headerstr += "Content-Type: " + MIME_TEXT + "\r\n";
+			byte[] response = getResponseBytes(headerstr, "<h1>404 - Not Found</h1>".getBytes(StandardCharsets.UTF_8));
 			con.sendPacket(response);
 		}
 		return true;
@@ -80,8 +83,7 @@ public class BasicHttpServer {
 	 *            the body of the message
 	 * @return the bytes of the response
 	 */
-	public static byte[] getResponseBytes(String headerstr, String pagestr) {
-		byte[] body = pagestr.getBytes(StandardCharsets.UTF_8);
+	public static byte[] getResponseBytes(String headerstr, byte[] body) {
 		headerstr += "Content-Length: " + body.length + "\r\n";
 		headerstr += "\r\n";
 		byte[] header = headerstr.getBytes(StandardCharsets.US_ASCII);
@@ -100,8 +102,26 @@ public class BasicHttpServer {
 	 * @param page
 	 *            the string to serve
 	 */
-	public static void addPage(String path, String page) {
+	public static void addPage(String path, HttpPage page) {
 		pages.put(path, page);
+	}
+
+	public static class HttpPage {
+		private String mime;
+		private byte[] bytes;
+
+		public HttpPage(String mime, byte[] bytes) {
+			this.mime = mime;
+			this.bytes = bytes;
+		}
+
+		public byte[] getBytes() {
+			return bytes;
+		}
+
+		public String getMime() {
+			return mime;
+		}
 	}
 }
 

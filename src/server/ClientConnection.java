@@ -5,11 +5,13 @@ import java.util.ArrayList;
 
 import AI.SimpleAI;
 import common.AsyncSocket;
+import common.DirectProtocol;
 import common.Mark;
 import common.Player;
 import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
+import common.SocketProtocol;
 import httpServer.BasicHttpServer;
 import httpServer.WebSocketProtocol;
 
@@ -20,58 +22,63 @@ public class ClientConnection {
 	private Server server;
 	private RemotePlayer player;
 	private boolean isBasicSocket = true;
+	private SocketProtocol socketProtocol;
 
 	/**
 	 * Initializes a ClientConnection
+	 * 
 	 * @param server
-	 *             Server class to use
+	 *            Server class to use
 	 * @param asyncChannel
-	 *             asyncChannel to use
+	 *            asyncChannel to use
 	 */
 	public ClientConnection(Server server, AsynchronousSocketChannel asyncChannel) {
 		this.server = server;
 		this.state = SessionState.authenticating;
 		this.name = "";
 
-		setSocket(new AsyncSocket(asyncChannel));
-	}
-
-	/**
-	 * Initializes AsyncSocket 
-	 * @param sock
-	 *             socket to initialize
-	 */
-	private void setSocket(AsyncSocket sock) {
-		this.sock = sock;
+		sock = new AsyncSocket(asyncChannel);
 		sock.onClose(() -> server.disconnectClient(this));
-		sock.onMessage(str -> parseMessage(str));
+		sock.onPacket(packet -> parsePacket(packet));
+
+		socketProtocol = new DirectProtocol();
+		socketProtocol.setSocket(sock);
 	}
 
-	/**
-	 * Parse a client message according to the protocol
-	 * @param message
-	 *             client message to parse
-	 */
-	private void parseMessage(String message) {
+
+	private void parsePacket(byte[] packet) {
 		// check if the request is using a different protocol
 		if (isBasicSocket && state == SessionState.authenticating) {
 			// websocket
-			WebSocketProtocol websock = WebSocketProtocol.tryConnectWebsocket(message, sock);
+			WebSocketProtocol websock = WebSocketProtocol.tryConnectWebsocket(packet, sock);
 			if (websock != null) {
-				sock.setProtocol(websock);
+				socketProtocol = websock;
 				isBasicSocket = false;
 				System.out.println("websocket client connected");
 				return;
 			}
 
 			// simple http request
-			if (BasicHttpServer.tryRespondGET(message, sock)) {
+			if (BasicHttpServer.tryRespondGET(packet, sock)) {
 				return;
 			}
 		}
 
+		String message = socketProtocol.parsePacket(packet);
+		if (message != null) {
+			parseMessage(message);
+		}
+	}
+
+	/**
+	 * Parse a client message according to the protocol
+	 * 
+	 * @param message
+	 *            client message to parse
+	 */
+	private void parseMessage(String message) {
 		System.out.println(name + "\t>> " + message);
-		String[] parts = message.split(" ");
+		String[] parts = message.split("\\s+");
 		switch (parts[0]) {
 		case "queue":
 			queueGame();
@@ -90,7 +97,7 @@ public class ClientConnection {
 				sendString("error errorMessage No name specified");
 				break;
 			}
-			setName(parts[1]);
+			login(parts[1]);
 			break;
 
 		case "place":
@@ -112,16 +119,21 @@ public class ClientConnection {
 			break;
 
 		case "bot":
+			if (state != SessionState.lobby && state != SessionState.queued) {
+				showModalMessage("You need to be in the lobby to start a new game");
+				break;
+			}
 			ArrayList<Player> players = new ArrayList<>();
 			players.add(new RemotePlayer(this, Mark.RED));
+			// TODO do something to make sure this name is available
 			players.add(new SimpleAI("OK_Bot", Mark.YELLOW));
 			server.startGame(players);
-
 		}
 	}
 
 	/**
-	 * leaves a game if the current SessionState is ingame, sets the SessionState to lobby if successful.
+	 * leaves a game if the current SessionState is ingame, sets the
+	 * SessionState to lobby if successful.
 	 */
 	private void leaveGame() {
 		if (state != SessionState.ingame) {
@@ -136,10 +148,11 @@ public class ClientConnection {
 
 	/**
 	 * Executes a move, next turn if successful.
-	 * @param row 
-	 *             chosen row
+	 * 
+	 * @param row
+	 *            chosen row
 	 * @param col
-	 *             chosen col
+	 *            chosen col
 	 */
 	private void commitMove(int row, int col) {
 		if (state != SessionState.ingame) {
@@ -178,19 +191,21 @@ public class ClientConnection {
 	}
 
 	/**
-	 * sets the player name if SessionState is authenticating, the name doens't contain invalid characters
-	 * the name is not already taken. If it's successful it sets SessionState to lobby and queues automatically for a game. 
+	 * Attempts to log in with the given name, will send errors if the name is
+	 * not available or valid or if this connection can not log in at this
+	 * moment
+	 * 
 	 * @param name
-	 *             chosen name
+	 *            chosen name
 	 */
-	private void setName(String name) {
+	private void login(String name) {
 		if (state != SessionState.authenticating) {
 			showModalMessage("Already logged in. You can't set your name at this time");
 			return;
 		}
 		// TODO the protocol doesn't actually specify a legal character, "word"
 		// characters is assumed here. \w matches only a-zA-Z0-9_
-		if (!name.matches("\\w")) {
+		if (!name.matches("^\\w+$")) {
 			sendString("error invalidCharacters");
 			return;
 		}
@@ -216,10 +231,12 @@ public class ClientConnection {
 	 */
 	public void disconnect() {
 		sock.close();
+		// TODO leave game
 	}
 
-	/** 
+	/**
 	 * getter name
+	 * 
 	 * @return this.name
 	 */
 	public String getName() {
@@ -228,7 +245,8 @@ public class ClientConnection {
 
 	/**
 	 * getter state
-	 * @return this.state 
+	 * 
+	 * @return this.state
 	 */
 	public SessionState getState() {
 		return state;
@@ -236,6 +254,7 @@ public class ClientConnection {
 
 	/**
 	 * setter this.state
+	 * 
 	 * @param state
 	 */
 	public void setState(SessionState state) {
@@ -244,8 +263,9 @@ public class ClientConnection {
 
 	/**
 	 * Send an error message
-	 * @param message 
-	 *             error message to send.
+	 * 
+	 * @param message
+	 *            error message to send.
 	 */
 	public void showModalMessage(String message) {
 		sendString("error errorMessage " + message);
@@ -253,18 +273,20 @@ public class ClientConnection {
 
 	/**
 	 * Send a String str trough the AsyncSocket this.sock
-	 * @param str string
-	 *             to send trough this.sock
+	 * 
+	 * @param str
+	 *            string to send trough this.sock
 	 */
 	public void sendString(String str) {
 		System.out.println(name + "\t<< " + str);
-		sock.sendString(str);
+		sock.sendPacket(socketProtocol.textPacket(str));
 	}
 
 	/**
 	 * setter server Player
+	 * 
 	 * @param player
-	 *             server Player object
+	 *            server Player object
 	 */
 	public void setPlayer(RemotePlayer player) {
 		this.player = player;
@@ -272,6 +294,7 @@ public class ClientConnection {
 
 	/**
 	 * getter server Player
+	 * 
 	 * @return this.player
 	 */
 	public Player getPlayer() {

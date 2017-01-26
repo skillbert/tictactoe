@@ -35,9 +35,6 @@ public class Server {
 	 */
 	public Server(int port) throws IOException {
 		clients = new ArrayList<>();
-
-
-
 		ssocket = AsynchronousServerSocketChannel.open();
 		ssocket.bind(new InetSocketAddress(port));
 		startAcceptClient();
@@ -64,8 +61,9 @@ public class Server {
 	/**
 	 * removes a client from the server and closes the connection is the client
 	 * is still connected
-	 * @param client 
-	 *             client to remove
+	 * 
+	 * @param client
+	 *            client to remove
 	 */
 	public void disconnectClient(ClientConnection client) {
 		client.disconnect();
@@ -95,8 +93,9 @@ public class Server {
 
 	/**
 	 * Start a game with the players in players
+	 * 
 	 * @param players
-	 *             players to add to the game
+	 *            players to add to the game
 	 */
 	public void startGame(ArrayList<Player> players) {
 		System.out.println("Starting game with " + players.get(0) + ", " + players.get(1));
@@ -109,9 +108,11 @@ public class Server {
 
 	/**
 	 * Find the player using playername
-	 * @param playername 
-	 *             playername to look for
-	 * @return player object if a player with player name is found, null otherwise
+	 * 
+	 * @param playername
+	 *            playername to look for
+	 * @return player object if a player with player name is found, null
+	 *         otherwise
 	 */
 	public ClientConnection findPlayer(String playername) {
 		for (ClientConnection p : clients) {

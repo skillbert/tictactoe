@@ -1,19 +1,28 @@
-fix sending wins
-leave game
-send \n at the end of every message and fix being able to deal with them (probably implicit part of protocol since the assignments)
 deal with client disconnections
 more descriptive gui
 make sure we don't try to send something to a disconnected client
 
 === code cleanup ===
-merge remoteplayer and clientconnection classes
-maybe move mark away from the player
 rename row,col,height to y,x,z and reorder them back to x,y,z
 
 === extensions ===
 gui
-ai
+more ai
 make sure the server and client parse all possible input correctly (security, don't need ssl and stuff)
 different board sizes   - protocol doesn't support
 different player amount - protocol doesn't support
-javascript/websocket support
+
+=== protocol fuckups ===
+server:
+	need a command to tell the player he entered the lobby (currently "lobby")
+	don't autoqueue new clients on login as they won't be able to invite eachother
+	needs a command to tell a client about an opponent leaving the game
+client:
+	need a command to leave a game
+	
+questions:
+	do the clients automatically leave a game when it ends? this wouldn't give them a chance to look at the board in end state 
+	what charset?
+	message delimiter?
+	invite stuff incomplete
+	different board size not supported
