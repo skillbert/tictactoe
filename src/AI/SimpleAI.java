@@ -85,11 +85,11 @@ public class SimpleAI extends AIPlayer {
 
 		// choose the best spot and place
 		int best = 0;
-		int bestindex = board.INVALID_INDEX;
+		int bestindex = Board.INVALID_INDEX;
 		for (int index : moves) {
 			int score = attscores[index] + defscores[index];
 			System.out.println(score);
-			if (score > best || bestindex == board.INVALID_INDEX) {
+			if (score > best || bestindex == Board.INVALID_INDEX) {
 				best = score;
 				bestindex = index;
 			}

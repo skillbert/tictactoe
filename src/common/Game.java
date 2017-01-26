@@ -11,7 +11,6 @@ public class Game extends Observable {
 	private ArrayList<? extends Player> players;
 	private int turn;
 	private Point lastmove;
-	private boolean isCompleted;
 
 	public Game(ArrayList<? extends Player> players) {
 		if (players.size() != 2) {
@@ -25,7 +24,6 @@ public class Game extends Observable {
 	private void reset() {
 		board.reset();
 		turn = 0;
-		isCompleted = false;
 		state = GameState.onGoing;
 		lastmove = new Point(0, 0);
 	}
@@ -40,7 +38,7 @@ public class Game extends Observable {
 			player.showModalMessage("It is not your turn!");
 			return;
 		}
-		if (isCompleted) {
+		if (state != GameState.onGoing) {
 			player.showModalMessage("This game is over, you can no longer place pieces.");
 			return;
 		}
@@ -58,10 +56,8 @@ public class Game extends Observable {
 			// Player winner = players.stream().filter(p -> p.getMark() ==
 			// winmark).findAny().get();
 			state = GameState.won;
-			isCompleted = true;
 		} else if (board.isFull()) {
 			state = GameState.draw;
-			isCompleted = true;
 		}
 		setChanged();
 		notifyObservers(EventType.placed);

@@ -149,11 +149,8 @@ public class ClientConnection {
 			return;
 		}
 		// TODO the protocol doesn't actually specify a legal character, "word"
-		// characters is assumed here
-		// \W matches anything besides a-zA-Z0-9_
-		// java regex apparently doesn't have a simple way to match for
-		// substrings, so .* .*
-		if (name.matches(".*\\W.*")) {
+		// characters is assumed here. \w matches only a-zA-Z0-9_
+		if (!name.matches("\\w")) {
 			sendString("error invalidCharacters");
 			return;
 		}
@@ -165,9 +162,12 @@ public class ClientConnection {
 		this.name = name;
 		state = SessionState.lobby;
 
-		// TODO the standard requires us to instantly join the queue
 		if (Protocol.followStandards) {
+			// the standard requires us to instantly join the queue
 			queueGame();
+		} else {
+			// but we really just want to go to the lobby and decide there
+			sendString("lobby");
 		}
 	}
 

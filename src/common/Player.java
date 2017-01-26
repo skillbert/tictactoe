@@ -6,10 +6,8 @@ public abstract interface Player extends Observer {
 	public String getName();
 
 	/**
-	 * @deprecated store this in the game instead?
-	 * @return
+	 * Returns the mark of this player
 	 */
-	@Deprecated
 	public int getMark();
 
 	/**
