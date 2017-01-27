@@ -13,9 +13,11 @@ public class Game extends Observable {
 	private Point lastmove;
 
 	/**
-	 * Initialize Game, by creating a new board, assigning the players to the Game,
-	 * calling reset to set the initial values.
-	 * @param players list of objects implementing Player interface
+	 * Initialize Game, by creating a new board, assigning the players to the
+	 * Game, calling reset to set the initial values.
+	 * 
+	 * @param players
+	 *            list of objects implementing Player interface
 	 */
 	public Game(ArrayList<? extends Player> players) {
 		if (players.size() != 2) {
@@ -45,12 +47,17 @@ public class Game extends Observable {
 	}
 
 	/**
-	 * Executes a move if it's the players turn, the game is ongoing, the chosen position is empty and available.
-	 * if the move is successful it also checks for a winner and if the board is full.
-	 * if the game is not over it calls obtainTurn() on the next player.
-	 * @param player Player that executes the move 
-	 * @param row chosen row
-	 * @param column chosen column
+	 * Executes a move if it's the players turn, the game is ongoing, the chosen
+	 * position is empty and available. if the move is successful it also checks
+	 * for a winner and if the board is full. if the game is not over it calls
+	 * obtainTurn() on the next player.
+	 * 
+	 * @param player
+	 *            Player that executes the move
+	 * @param row
+	 *            chosen row
+	 * @param column
+	 *            chosen column
 	 *
 	 */
 	public void commitMove(Player player, int row, int column) {
@@ -81,13 +88,14 @@ public class Game extends Observable {
 		}
 		setChanged();
 		notifyObservers(EventType.placed);
-		if (winmark == Mark.EMPTY) {
+		if (state == GameState.onGoing) {
 			getTurn().obtainTurn();
 		}
 	}
-	
+
 	/**
 	 * returns the player whose turn it is next turn.
+	 * 
 	 * @return next player
 	 */
 	public Player getTurn() {
@@ -96,6 +104,7 @@ public class Game extends Observable {
 
 	/**
 	 * returns the player whose turn it was previous turn.
+	 * 
 	 * @return previous player
 	 */
 	public Player getPreviousTurn() {
@@ -104,14 +113,16 @@ public class Game extends Observable {
 
 	/**
 	 * getter game state.
+	 * 
 	 * @return this.state
 	 */
 	public GameState getState() {
 		return state;
 	}
 
-	/** 
+	/**
 	 * getter last move
+	 * 
 	 * @return this.lastmove
 	 */
 	public Point getLastMove() {
@@ -120,7 +131,9 @@ public class Game extends Observable {
 
 	/**
 	 * Checks if it's the given player's turn.
-	 * @param player player object to check
+	 * 
+	 * @param player
+	 *            player object to check
 	 * @return if it's the turn of player
 	 */
 	private boolean hasTurn(Player player) {
@@ -129,6 +142,7 @@ public class Game extends Observable {
 
 	/**
 	 * getter players list
+	 * 
 	 * @return this.players
 	 */
 	public ArrayList<? extends Player> getPlayers() {

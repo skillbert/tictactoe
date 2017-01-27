@@ -10,6 +10,14 @@ import org.apache.commons.codec.digest.DigestUtils;
 import common.AsyncSocket;
 import common.SocketProtocol;
 
+/**
+ * A protocol message parser for the websocket protocol. This class deals with
+ * all packets received from a websocket and can be used to build packets to
+ * send to the websocket.
+ * 
+ * @author Wilbert
+ *
+ */
 public class WebSocketProtocol implements SocketProtocol {
 	private static final String WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	private static final int OPTCODE_CLOSE = 0x8;

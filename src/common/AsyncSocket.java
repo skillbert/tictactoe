@@ -66,6 +66,9 @@ public class AsyncSocket {
 		}
 	}
 
+	/**
+	 * Called when this socket successfully connected
+	 */
 	private void connected() {
 		if (connectedCb != null) {
 			connectedCb.run();
@@ -73,6 +76,12 @@ public class AsyncSocket {
 		startReading();
 	}
 
+	/**
+	 * Called when this socket failed to connect
+	 * 
+	 * @param ex
+	 *            The exception thrown by the underlying socket
+	 */
 	private void connectFailed(Throwable ex) {
 		if (connectFailedCb != null) {
 			connectFailedCb.run();
@@ -220,13 +229,14 @@ public class AsyncSocket {
 		return false;
 	}
 
+	/**
+	 * Gets the underlying AsynchronousSocketChannel object
+	 * 
+	 * @return
+	 */
 	public AsynchronousSocketChannel getChannel() {
 		return channel;
 	}
-
-
-
-
 
 
 

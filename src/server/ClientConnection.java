@@ -8,7 +8,6 @@ import common.AsyncSocket;
 import common.DirectProtocol;
 import common.Mark;
 import common.Player;
-import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
 import common.SocketProtocol;
@@ -34,7 +33,7 @@ public class ClientConnection {
 	 */
 	public ClientConnection(Server server, AsynchronousSocketChannel asyncChannel) {
 		this.server = server;
-		this.state = SessionState.authenticating;
+		state = SessionState.authenticating;
 		this.name = "";
 
 		sock = new AsyncSocket(asyncChannel);
@@ -45,7 +44,13 @@ public class ClientConnection {
 		socketProtocol.setSocket(sock);
 	}
 
-
+	/**
+	 * Parses a raw packet from connection and passes it on to the correct
+	 * module
+	 * 
+	 * @param packet
+	 *            the packet to parse
+	 */
 	private void parsePacket(byte[] packet) {
 		// check if the request is using a different protocol
 		if (isBasicSocket && state == SessionState.authenticating) {
@@ -84,7 +89,7 @@ public class ClientConnection {
 			queueGame();
 			break;
 
-		case "unqueue":
+		case "leaveQueue":
 			unQueueGame();
 			break;
 
@@ -140,9 +145,8 @@ public class ClientConnection {
 			showModalMessage("You need to be in a game to leave one.");
 			return;
 		}
-		state = SessionState.lobby;
+		setState(SessionState.lobby);
 		setPlayer(null);
-		sendString("lobby");
 		// TODO tell our opponent about it, can't with protocol
 	}
 
@@ -157,7 +161,7 @@ public class ClientConnection {
 	private void commitMove(int row, int col) {
 		if (state != SessionState.ingame) {
 			sendString("error invalidMove");
-			System.out.println("invalid move 3 " + state);
+			System.out.println("invalid move " + state);
 			return;
 		}
 		player.getGame().commitMove(player, col, row);
@@ -186,8 +190,6 @@ public class ClientConnection {
 			return;
 		}
 		state = SessionState.lobby;
-		// TODO non-standard protocol
-		sendString("lobby");
 	}
 
 	/**
@@ -203,8 +205,7 @@ public class ClientConnection {
 			showModalMessage("Already logged in. You can't set your name at this time");
 			return;
 		}
-		// TODO the protocol doesn't actually specify a legal character, "word"
-		// characters is assumed here. \w matches only a-zA-Z0-9_
+
 		if (!name.matches("^\\w+$")) {
 			sendString("error invalidCharacters");
 			return;
@@ -215,15 +216,8 @@ public class ClientConnection {
 		}
 
 		this.name = name;
-		state = SessionState.lobby;
-
-		if (Protocol.followStandards) {
-			// the standard requires us to instantly join the queue
-			queueGame();
-		} else {
-			// but we really just want to go to the lobby and decide there
-			sendString("lobby");
-		}
+		setState(SessionState.lobby);
+		sendString("lobby");
 	}
 
 	/**
@@ -231,6 +225,7 @@ public class ClientConnection {
 	 */
 	public void disconnect() {
 		sock.close();
+		setState(SessionState.disconnected);
 		// TODO leave game
 	}
 
@@ -259,6 +254,7 @@ public class ClientConnection {
 	 */
 	public void setState(SessionState state) {
 		this.state = state;
+		server.broadcastPlayers();
 	}
 
 	/**
@@ -299,6 +295,24 @@ public class ClientConnection {
 	 */
 	public Player getPlayer() {
 		return player;
+	}
+
+	/**
+	 * getter Server
+	 * 
+	 * @return this.server
+	 */
+	public Server getServer() {
+		return server;
+	}
+
+	/**
+	 * Gets whether this client connection is a player that is logged in
+	 * 
+	 * @return
+	 */
+	public boolean isLoggedIn() {
+		return state == SessionState.authenticating || state == SessionState.queued || state == SessionState.ingame;
 	}
 }
 

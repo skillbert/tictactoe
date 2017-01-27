@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Observable;
 
+import common.Game.GameState;
 import server.ClientConnection;
 
 public class RemotePlayer implements Player {
@@ -44,6 +45,11 @@ public class RemotePlayer implements Player {
 			Point lastmove = game.getLastMove();
 			connection.sendString("placed " + game.getState() + " " + lastmove.x + " " + lastmove.y + " "
 					+ currentPlayer + " " + newPlayer);
+
+			if (game.getState() != GameState.onGoing) {
+				connection.setState(SessionState.lobby);
+				connection.setPlayer(null);
+			}
 			break;
 
 		case started:

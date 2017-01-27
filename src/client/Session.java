@@ -8,7 +8,7 @@ import java.util.Optional;
 import common.AsyncSocket;
 import common.DirectProtocol;
 import common.Game;
-import common.Mark;
+import common.Game.GameState;
 import common.Player;
 import common.SessionState;
 import common.SocketProtocol;
@@ -19,15 +19,16 @@ public class Session extends Observable {
 	private SessionState state;
 	private Game currentGame;
 	private Ui ui;
-	private PeerPlayer myPlayer;
+	private String myName;
 	private SocketProtocol protocol;
 
 	/**
-	 * Initializes a new Session by creating a new Peerplayer (network player) and initializing a UI.
+	 * Initializes a new Session by creating a new Peerplayer (network player)
+	 * and initializing a UI.
 	 */
 	public Session() {
 		setState(SessionState.disconnected);
-		myPlayer = new PeerPlayer("Me", Mark.EMPTY);
+		myName = "";
 		ui = new Tui(this);
 		this.addObserver(ui);
 	}
@@ -41,16 +42,18 @@ public class Session extends Observable {
 
 	/**
 	 * getter state
+	 * 
 	 * @return this.state
 	 */
 	public SessionState getState() {
 		return state;
 	}
 
-	/** 
+	/**
 	 * setter this.state
+	 * 
 	 * @param state
-	 *             state to set.
+	 *            state to set.
 	 */
 	public void setState(SessionState state) {
 		this.state = state;
@@ -60,10 +63,11 @@ public class Session extends Observable {
 
 	/**
 	 * Sets up a connection to host:port using an AcynSocket()
+	 * 
 	 * @param host
-	 *             Host to connect to
+	 *            Host to connect to
 	 * @param port
-	 *             Port to connect to
+	 *            Port to connect to
 	 */
 	public void connect(String host, int port) {
 		setState(SessionState.connecting);
@@ -84,10 +88,11 @@ public class Session extends Observable {
 
 	/**
 	 * Commits a chosen move by sending it over the socket to the server.
+	 * 
 	 * @param x
-	 *             chosen x / column
+	 *            chosen x / column
 	 * @param y
-	 *             chosen y / row
+	 *            chosen y / row
 	 */
 	public void commitMove(int x, int y) {
 		sendMessage("place " + x + " " + y);
@@ -95,11 +100,12 @@ public class Session extends Observable {
 
 	/**
 	 * Logs in with the chosen name
+	 * 
 	 * @param name
-	 *             chosen name
+	 *            chosen name
 	 */
 	public void login(String name) {
-		myPlayer.setName(name);
+		myName = name;
 		sendMessage("login " + name);
 	}
 
@@ -117,6 +123,7 @@ public class Session extends Observable {
 
 	/**
 	 * Sends a string message over the socket according to the protocol.
+	 * 
 	 * @param message
 	 */
 	private void sendMessage(String message) {
@@ -124,7 +131,8 @@ public class Session extends Observable {
 	}
 
 	/**
-	 * Connection closed handler, sets SessionState to disconnected and sock to null.
+	 * Connection closed handler, sets SessionState to disconnected and sock to
+	 * null.
 	 */
 	private void connectionClosed() {
 		setState(SessionState.disconnected);
@@ -132,7 +140,8 @@ public class Session extends Observable {
 	}
 
 	/**
-	 * Connection failed handler, sets SessionState to disconnected and shows a message to the user indicating the failure 
+	 * Connection failed handler, sets SessionState to disconnected and shows a
+	 * message to the user indicating the failure
 	 */
 	private void connectFailed() {
 		ui.showModalMessage("Failed to connect to the server");
@@ -141,6 +150,7 @@ public class Session extends Observable {
 
 	/**
 	 * parse a message from the server
+	 * 
 	 * @param packet
 	 */
 	private void parseMessage(byte[] packet) {
@@ -175,7 +185,9 @@ public class Session extends Observable {
 	}
 
 	/**
-	 * parse the new move message, verify the player that made the move, and make the move in the client.
+	 * parse the new move message, verify the player that made the move, and
+	 * make the move in the client.
+	 * 
 	 * @param parts
 	 */
 	private void parsePlaced(String[] parts) {
@@ -207,11 +219,17 @@ public class Session extends Observable {
 		currentGame.commitMove(player.get(), y, x);
 		setChanged();
 		notifyObservers(Ui.UpdateType.gamemove);
+
+
+		if (gamestate != GameState.onGoing.toString()) {
+			setState(SessionState.lobby);
+		}
 	}
 
 	/**
-	 * starts a game with 2 players by creating the PeerPlayer and Game objects, calling startGame()
-	 * and setting the state to ingame
+	 * starts a game with 2 players by creating the PeerPlayer and Game objects,
+	 * calling startGame() and setting the state to ingame
+	 * 
 	 * @param playername1
 	 * @param playername2
 	 */
@@ -226,9 +244,11 @@ public class Session extends Observable {
 	}
 
 	/**
-	 * Parsing error handler. Takes an error message and presents it to the user.
+	 * Parsing error handler. Takes an error message and presents it to the
+	 * user.
+	 * 
 	 * @param errorMessage
-	 *             Error message to display.
+	 *            Error message to display.
 	 */
 	private void parseError(String errorMessage) {
 		String[] parts = errorMessage.split(" ", 2);
@@ -257,6 +277,7 @@ public class Session extends Observable {
 
 	/**
 	 * getter currentGame
+	 * 
 	 * @return this.currentGame
 	 */
 	public Game getGame() {

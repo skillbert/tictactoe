@@ -1,5 +1,11 @@
 package common;
 
+/**
+ * A protocol wrapper to parse binary messages using the standard protcol
+ * 
+ * @author Wilbert
+ *
+ */
 public class DirectProtocol implements SocketProtocol {
 	@Override
 	public void setSocket(AsyncSocket sock) {

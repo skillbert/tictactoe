@@ -68,6 +68,7 @@ public class Server {
 	public void disconnectClient(ClientConnection client) {
 		client.disconnect();
 		clients.remove(client);
+		broadcastPlayers();
 		System.out.println("Client disconnected, clients left: " + clients.size());
 	}
 
@@ -121,6 +122,25 @@ public class Server {
 			}
 		}
 		return null;
+	}
+
+	public void broadcastPlayers() {
+		String players = "";
+		for (ClientConnection con : clients) {
+			if (!con.isLoggedIn()) {
+				continue;
+			}
+			if (!players.isEmpty()) {
+				players += " ";
+			}
+			players += con.getName() + "-" + con.getState();
+		}
+		for (ClientConnection con : clients) {
+			if (!con.isLoggedIn()) {
+				continue;
+			}
+			con.sendString("players " + players);
+		}
 	}
 }
 

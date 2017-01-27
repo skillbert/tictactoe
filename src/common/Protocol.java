@@ -7,9 +7,10 @@ public class Protocol {
 	public static final int DEFAULTPORT = 12345;
 	public static final Charset charset = StandardCharsets.UTF_8;
 
-	/**
-	 * If the server should follow the exact protocol, hopefully the protocol
-	 * will get to a state where this can be removed
-	 */
-	public static boolean followStandards = false;
+	public static final String QUEUE = "queue";
+	public static final String LEAVEQUEUE = "leaveQueue";
+	public static final String WAITING = "waiting";
+	public static final String LOGIN = "login";
+	public static final String PLACED = "placed";
+	public static final String PLAYERS = "players";
 }
