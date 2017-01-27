@@ -17,14 +17,14 @@ import common.SessionState;
 import common.SocketProtocol;
 
 public class Session extends Observable {
-
+	
 	private AsyncSocket sock;
 	private SessionState state;
 	private Game currentGame;
 	private Ui ui;
 	private String myName;
 	private SocketProtocol protocol;
-
+	
 	/**
 	 * Initializes a new Session by creating a new Peerplayer (network player)
 	 * and initializing a UI.
@@ -35,14 +35,14 @@ public class Session extends Observable {
 		ui = new Tui(this);
 		this.addObserver(ui);
 	}
-
+	
 	/**
 	 * calls run() on the ui so starts interaction.
 	 */
 	public void run() {
 		ui.run();
 	}
-
+	
 	/**
 	 * getter state
 	 * 
@@ -51,7 +51,7 @@ public class Session extends Observable {
 	public SessionState getState() {
 		return state;
 	}
-
+	
 	/**
 	 * setter this.state
 	 * 
@@ -63,7 +63,7 @@ public class Session extends Observable {
 		setChanged();
 		notifyObservers(Ui.UpdateType.state);
 	}
-
+	
 	/**
 	 * Sets up a connection to host:port using an AcynSocket()
 	 * 
@@ -88,7 +88,7 @@ public class Session extends Observable {
 			return;
 		}
 	}
-
+	
 	/**
 	 * Commits a chosen move by sending it over the socket to the server.
 	 * 
@@ -100,7 +100,7 @@ public class Session extends Observable {
 	public void commitMove(int x, int y) {
 		sendMessage("place " + x + " " + y);
 	}
-
+	
 	/**
 	 * Logs in with the chosen name
 	 * 
@@ -111,7 +111,7 @@ public class Session extends Observable {
 		myName = name;
 		sendMessage("login " + name);
 	}
-
+	
 	/**
 	 * Queues for a game if the current SessionState is lobby.
 	 */
@@ -120,10 +120,10 @@ public class Session extends Observable {
 			ui.showModalMessage("You need to be in the lobby to queue for a game.");
 			return;
 		}
-
+		
 		sendMessage("queue");
 	}
-
+	
 	/**
 	 * Sends a string message over the socket according to the protocol.
 	 * 
@@ -132,7 +132,7 @@ public class Session extends Observable {
 	private void sendMessage(String message) {
 		sock.sendPacket(protocol.textPacket(message));
 	}
-
+	
 	/**
 	 * Connection closed handler, sets SessionState to disconnected and sock to
 	 * null.
@@ -141,7 +141,7 @@ public class Session extends Observable {
 		setState(SessionState.disconnected);
 		sock = null;
 	}
-
+	
 	/**
 	 * Connection failed handler, sets SessionState to disconnected and shows a
 	 * message to the user indicating the failure
@@ -150,7 +150,7 @@ public class Session extends Observable {
 		ui.showModalMessage("Failed to connect to the server");
 		setState(SessionState.disconnected);
 	}
-
+	
 	/**
 	 * parse a message from the server
 	 * 
@@ -161,67 +161,68 @@ public class Session extends Observable {
 		if (message == null) {
 			return;
 		}
-
+		
 		CommandParser command = new CommandParser(message);
 		try {
 			switch (command.getCommand()) {
-			case Protocol.ERROR:
-				parseError(command.nextString(), command.remainingString());
-				break;
-
-			case Protocol.STARTGAME:
-				startGame(command.nextString(), command.nextString());
-				break;
-
-			case Protocol.WAITING:
-				setState(SessionState.queued);
-				break;
-
-			case Protocol.LOBBY:
-				setState(SessionState.lobby);
-				break;
-
-			case Protocol.PLACED:
-				parsePlaced(command.nextString(), command.nextInt(), command.nextInt(), command.nextString(),
-						command.nextString());
-				break;
-
-			default:
-				// TODO ignore this or do something else?
-				System.out.println("unknown command from server");
+				case Protocol.ERROR:
+					parseError(command.nextString(), command.remainingString());
+					break;
+				
+				case Protocol.STARTGAME:
+					startGame(command.nextString(), command.nextString());
+					break;
+				
+				case Protocol.WAITING:
+					setState(SessionState.queued);
+					break;
+				
+				case Protocol.LOBBY:
+					setState(SessionState.lobby);
+					break;
+				
+				case Protocol.PLACED:
+					parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
+							command.nextString(), command.nextString());
+					break;
+				
+				default:
+					// TODO ignore this or do something else?
+					System.out.println("unknown command from server");
 			}
 		} catch (CommandFormatException ex) {
 			System.out.println("Invalid command received from server");
 		}
 	}
-
+	
 	/**
 	 * parse the new move message, verify the player that made the move, and
 	 * make the move in the client.
 	 * 
 	 * @param parts
 	 */
-	private void parsePlaced(String gamestate, int x, int y, String currentPlayer, String nextPlayer) {
+	private void parsePlaced(String gamestate, int x, int y, String currentPlayer,
+			String nextPlayer) {
 		if (state != SessionState.ingame) {
 			UnknownServerError("Received a placed message while not in a game");
 			return;
 		}
-
+		
 		Optional<? extends Player> player = currentGame.getPlayers().stream()
 				.filter(p -> p.getName().equals(currentPlayer)).findAny();
 		if (!player.isPresent()) {
 			UnknownServerError("Received a move from a player that is not in the current game");
 		}
-
+		
 		currentGame.commitMove(player.get(), y, x);
 		setChanged();
 		notifyObservers(Ui.UpdateType.gamemove);
-
+		
 		if (!gamestate.equals(GameState.onGoing.toString())) {
 			setState(SessionState.lobby);
 		}
 	}
-
+	
 	/**
 	 * starts a game with 2 players by creating the PeerPlayer and Game objects,
 	 * calling startGame() and setting the state to ingame
@@ -235,10 +236,10 @@ public class Session extends Observable {
 		players.add(new PeerPlayer(playername2, 1));
 		currentGame = new Game(players);
 		currentGame.startGame();
-
+		
 		setState(SessionState.ingame);
 	}
-
+	
 	/**
 	 * Parsing error handler. Takes an error message and presents it to the
 	 * user.
@@ -249,28 +250,29 @@ public class Session extends Observable {
 	private void parseError(String type, String message) {
 		// TODO put these strings in nice constants
 		switch (type) {
-		case "errorMessage":
-			ui.showModalMessage(message);
-			break;
-		case "nameTaken":
-			ui.showModalMessage("This name is already taken.");
-			break;
-		case "invalidCharacters":
-			ui.showModalMessage("The name you chose contains invalid characters.");
-			break;
-		case "couldNotStart":
-			// TODO this error is specified in the protocol, does it actually
-			// exist?
-			ui.showModalMessage("Error: Could not start");
-			break;
-		case "invalidMove":
-			ui.showModalMessage("Invalid move");
-			// TODO rewind the game state and find out how this error could
-			// happen
-			break;
+			case "errorMessage":
+				ui.showModalMessage(message);
+				break;
+			case "nameTaken":
+				ui.showModalMessage("This name is already taken.");
+				break;
+			case "invalidCharacters":
+				ui.showModalMessage("The name you chose contains invalid characters.");
+				break;
+			case "couldNotStart":
+				// TODO this error is specified in the protocol, does it
+				// actually
+				// exist?
+				ui.showModalMessage("Error: Could not start");
+				break;
+			case "invalidMove":
+				ui.showModalMessage("Invalid move");
+				// TODO rewind the game state and find out how this error could
+				// happen
+				break;
 		}
 	}
-
+	
 	/**
 	 * getter currentGame
 	 * 
@@ -279,14 +281,14 @@ public class Session extends Observable {
 	public Game getGame() {
 		return currentGame;
 	}
-
+	
 	/**
 	 * Sets SessionState to authenticating
 	 */
 	private void connected() {
 		setState(SessionState.authenticating);
 	}
-
+	
 	/**
 	 * Called when the server sends something unexpected
 	 */
