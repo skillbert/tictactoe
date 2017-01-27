@@ -5,9 +5,13 @@ import java.util.ArrayList;
 
 import AI.SimpleAI;
 import common.AsyncSocket;
+import common.CommandParser;
+import common.CommandParser.CommandFormatException;
 import common.DirectProtocol;
+import common.Game;
 import common.Mark;
 import common.Player;
+import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
 import common.SocketProtocol;
@@ -83,58 +87,51 @@ public class ClientConnection {
 	 */
 	private void parseMessage(String message) {
 		System.out.println(name + "\t>> " + message);
-		String[] parts = message.split("\\s+");
-		switch (parts[0]) {
-		case "queue":
-			queueGame();
-			break;
 
-		case "leaveQueue":
-			unQueueGame();
-			break;
-
-		case "leaveGame":
-			leaveGame();
-			break;
-
-		case "login":
-			if (parts.length < 2) {
-				sendString("error errorMessage No name specified");
+		CommandParser command = new CommandParser(message);
+		try {
+			switch (command.getCommand()) {
+			case Protocol.LOGIN:
+				login(command.nextString());
+				break;
+			case Protocol.QUEUE:
+				queueGame();
+				break;
+			case Protocol.LEAVEQUEUE:
+				unQueueGame();
+				break;
+			case Protocol.PLACE:
+				commitMove(command.nextInt(), command.nextInt());
+				break;
+			case Protocol.BOT:
+				startBotGame(command.nextString());
+				break;
+			default:
+				sendString(Protocol.UNKNOWNCOMMAND);
 				break;
 			}
-			login(parts[1]);
-			break;
-
-		case "place":
-			if (parts.length < 3) {
-				sendString("error invalidMove");
-				System.out.println("invalid move 1");
-				break;
-			}
-			int x, y;
-			try {
-				x = Integer.parseUnsignedInt(parts[1]);
-				y = Integer.parseUnsignedInt(parts[2]);
-			} catch (NumberFormatException ex) {
-				sendString("error invalidMove");
-				System.out.println("invalid move 2");
-				break;
-			}
-			commitMove(x, y);
-			break;
-
-		case "bot":
-			if (state != SessionState.lobby && state != SessionState.queued) {
-				showModalMessage("You need to be in the lobby to start a new game");
-				break;
-			}
-			ArrayList<Player> players = new ArrayList<>();
-			players.add(new RemotePlayer(this, Mark.RED));
-			// TODO do something to make sure this name is available
-			players.add(new SimpleAI("OK_Bot", Mark.YELLOW));
-			server.startGame(players);
+		} catch (CommandFormatException ex) {
+			sendString(Protocol.ERROR_INVALIDCOMMAND);
 		}
 	}
+
+	/**
+	 * Starts a new bot game with the current player and the choosen bot
+	 */
+	private void startBotGame(String botname) {
+		if (state != SessionState.lobby && state != SessionState.queued) {
+			showModalMessage("You need to be in the lobby to start a new game");
+			return;
+		}
+		// TODO implement other bots
+
+		ArrayList<Player> players = new ArrayList<>();
+		players.add(new RemotePlayer(this, Mark.RED));
+		// TODO do something to make sure this name is available
+		players.add(new SimpleAI("OK_Bot", Mark.YELLOW));
+		server.startGame(players);
+	}
+
 
 	/**
 	 * leaves a game if the current SessionState is ingame, sets the
@@ -161,10 +158,15 @@ public class ClientConnection {
 	private void commitMove(int row, int col) {
 		if (state != SessionState.ingame) {
 			sendString("error invalidMove");
-			System.out.println("invalid move " + state);
 			return;
 		}
-		player.getGame().commitMove(player, col, row);
+		Game game = player.getGame();
+		int size = game.getBoard().getSize();
+		if (row < 0 || row >= size || col < 0 || col >= size) {
+			sendString("error invalidMove");
+			return;
+		}
+		game.commitMove(player, col, row);
 	}
 
 	/**
@@ -312,7 +314,7 @@ public class ClientConnection {
 	 * @return
 	 */
 	public boolean isLoggedIn() {
-		return state == SessionState.authenticating || state == SessionState.queued || state == SessionState.ingame;
+		return state == SessionState.lobby || state == SessionState.queued || state == SessionState.ingame;
 	}
 }
 

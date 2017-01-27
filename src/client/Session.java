@@ -6,10 +6,13 @@ import java.util.Observable;
 import java.util.Optional;
 
 import common.AsyncSocket;
+import common.CommandParser;
+import common.CommandParser.CommandFormatException;
 import common.DirectProtocol;
 import common.Game;
 import common.Game.GameState;
 import common.Player;
+import common.Protocol;
 import common.SessionState;
 import common.SocketProtocol;
 
@@ -158,29 +161,37 @@ public class Session extends Observable {
 		if (message == null) {
 			return;
 		}
-		// TODO add some sort of protocol error handling if the server doesn't
-		// behave
-		String[] parts = message.split(" ");
-		switch (parts[0]) {
-		case "error":
-			parseError(message.split(" ", 2)[1]);
-			break;
 
-		case "startGame":
-			startGame(parts[1], parts[2]);
-			break;
+		CommandParser command = new CommandParser(message);
+		try {
+			switch (command.getCommand()) {
+			case Protocol.ERROR:
+				parseError(command.nextString(), command.remainingString());
+				break;
 
-		case "waiting":
-			setState(SessionState.queued);
-			break;
+			case Protocol.STARTGAME:
+				startGame(command.nextString(), command.nextString());
+				break;
 
-		case "lobby":
-			setState(SessionState.lobby);
-			break;
+			case Protocol.WAITING:
+				setState(SessionState.queued);
+				break;
 
-		case "placed":
-			parsePlaced(parts);
-			break;
+			case Protocol.LOBBY:
+				setState(SessionState.lobby);
+				break;
+
+			case Protocol.PLACED:
+				parsePlaced(command.nextString(), command.nextInt(), command.nextInt(), command.nextString(),
+						command.nextString());
+				break;
+
+			default:
+				// TODO ignore this or do something else?
+				System.out.println("unknown command from server");
+			}
+		} catch (CommandFormatException ex) {
+			System.out.println("Invalid command received from server");
 		}
 	}
 
@@ -190,30 +201,16 @@ public class Session extends Observable {
 	 * 
 	 * @param parts
 	 */
-	private void parsePlaced(String[] parts) {
-		if (parts.length < 6) {
-			throw new RuntimeException();
-		}
+	private void parsePlaced(String gamestate, int x, int y, String currentPlayer, String nextPlayer) {
 		if (state != SessionState.ingame) {
-			throw new RuntimeException();
+			UnknownServerError("Received a placed message while not in a game");
+			return;
 		}
 
-		String gamestate = parts[1];
-
-		int x, y;
-		try {
-			x = Integer.parseUnsignedInt(parts[2]);
-			y = Integer.parseUnsignedInt(parts[3]);
-		} catch (NumberFormatException ex) {
-			throw new RuntimeException();
-		}
-
-		String currentPlayer = parts[4];
 		Optional<? extends Player> player = currentGame.getPlayers().stream()
 				.filter(p -> p.getName().equals(currentPlayer)).findAny();
-
 		if (!player.isPresent()) {
-			throw new RuntimeException();
+			UnknownServerError("Received a move from a player that is not in the current game");
 		}
 
 		currentGame.commitMove(player.get(), y, x);
@@ -250,11 +247,11 @@ public class Session extends Observable {
 	 * @param errorMessage
 	 *            Error message to display.
 	 */
-	private void parseError(String errorMessage) {
-		String[] parts = errorMessage.split(" ", 2);
-		switch (parts[0]) {
+	private void parseError(String type, String message) {
+		// TODO put these strings in nice constants
+		switch (type) {
 		case "errorMessage":
-			ui.showModalMessage(parts[1]);
+			ui.showModalMessage(message);
 			break;
 		case "nameTaken":
 			ui.showModalMessage("This name is already taken.");
@@ -289,6 +286,15 @@ public class Session extends Observable {
 	 */
 	private void connected() {
 		setState(SessionState.authenticating);
+	}
+
+	/**
+	 * Called when the server sends something unexpected
+	 */
+	private void UnknownServerError(String reason) {
+		// TODO figure out what to actually do with this, do we
+		// disconnect/throw/ingore?
+		System.out.println("Server protocol error: " + reason);
 	}
 }
 
