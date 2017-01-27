@@ -106,6 +106,9 @@ public class ClientConnection {
 			case Protocol.BOT:
 				startBotGame(command.nextString());
 				break;
+			case Protocol.LEAVEGAME:
+				leaveGame();
+				break;
 			default:
 				sendString(Protocol.UNKNOWNCOMMAND);
 				break;
@@ -220,6 +223,8 @@ public class ClientConnection {
 		this.name = name;
 		setState(SessionState.lobby);
 		sendString("lobby");
+
+		server.broadcastPlayers();
 	}
 
 	/**
@@ -229,6 +234,9 @@ public class ClientConnection {
 		sock.close();
 		setState(SessionState.disconnected);
 		// TODO leave game
+		if (isLoggedIn()) {
+			server.broadcastPlayers();
+		}
 	}
 
 	/**
@@ -256,7 +264,6 @@ public class ClientConnection {
 	 */
 	public void setState(SessionState state) {
 		this.state = state;
-		server.broadcastPlayers();
 	}
 
 	/**

@@ -79,6 +79,9 @@ public class CommandParser {
 	 * @return
 	 */
 	public String remainingString() {
+		if (!hasNext()) {
+			return "";
+		}
 		return original.split("\\s+", index + 1)[index];
 	}
 

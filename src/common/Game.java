@@ -80,8 +80,6 @@ public class Game extends Observable {
 
 		int winmark = board.findWinner();
 		if (winmark != Mark.EMPTY) {
-			// Player winner = players.stream().filter(p -> p.getMark() ==
-			// winmark).findAny().get();
 			state = GameState.won;
 		} else if (board.isFull()) {
 			state = GameState.draw;
@@ -164,7 +162,13 @@ public class Game extends Observable {
 	@Override
 	public String toString() {
 		String str = board.toString();
-		str += "It is " + getTurn().getName() + "'s turn";
+		if (state == GameState.won) {
+			str += getPreviousTurn().getName() + " won!";
+		} else if (state == GameState.draw) {
+			str += "The game is a draw!";
+		} else {
+			str += "It is " + getTurn().getName() + "'s turn";
+		}
 		return str;
 	}
 }

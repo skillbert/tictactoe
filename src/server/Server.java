@@ -5,17 +5,22 @@ import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 
 import common.Game;
+import common.Game.EventType;
+import common.Game.GameState;
 import common.Player;
 import common.Protocol;
 import common.RemotePlayer;
 import common.SessionState;
 import common.Util;
 
-public class Server {
+public class Server implements Observer {
 	private AsynchronousServerSocketChannel ssocket;
 	private ArrayList<ClientConnection> clients;
+	private ArrayList<Game> activeGames;
 
 	public static void main(String[] args) throws IOException {
 		try {
@@ -23,6 +28,7 @@ public class Server {
 		} catch (IOException ex) {
 			System.out.println("Server error " + ex.getMessage());
 		}
+		// keeps the server running until some user input
 		System.in.read();
 	}
 
@@ -35,6 +41,7 @@ public class Server {
 	 */
 	public Server(int port) throws IOException {
 		clients = new ArrayList<>();
+		activeGames = new ArrayList<>();
 		ssocket = AsynchronousServerSocketChannel.open();
 		ssocket.bind(new InetSocketAddress(port));
 		startAcceptClient();
@@ -68,7 +75,6 @@ public class Server {
 	public void disconnectClient(ClientConnection client) {
 		client.disconnect();
 		clients.remove(client);
-		broadcastPlayers();
 		System.out.println("Client disconnected, clients left: " + clients.size());
 	}
 
@@ -105,6 +111,16 @@ public class Server {
 			p.setGame(game);
 		}
 		game.startGame();
+		activeGames.add(game);
+		broadcastPlayers();
+		game.addObserver(this);
+	}
+
+	public void closeGame(Game game) {
+		System.out.println("Closing game");
+		activeGames.remove(game);
+		game.deleteObserver(this);
+		broadcastPlayers();
 	}
 
 	/**
@@ -140,6 +156,18 @@ public class Server {
 				continue;
 			}
 			con.sendString("players " + players);
+		}
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		if (o instanceof Game) {
+			Game game = (Game) o;
+			if (arg == EventType.placed) {
+				if (game.getState() != GameState.onGoing) {
+					closeGame(game);
+				}
+			}
 		}
 	}
 }

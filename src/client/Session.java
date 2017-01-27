@@ -217,8 +217,7 @@ public class Session extends Observable {
 		setChanged();
 		notifyObservers(Ui.UpdateType.gamemove);
 
-
-		if (gamestate != GameState.onGoing.toString()) {
+		if (!gamestate.equals(GameState.onGoing.toString())) {
 			setState(SessionState.lobby);
 		}
 	}
