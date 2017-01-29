@@ -61,11 +61,12 @@ public abstract class AIPlayer implements Player {
 	
 	/**
 	 * Performs the calculations to determine the move to make and returns the
-	 * move
+	 * move.
 	 * 
 	 * @param board
 	 *            Board object to use
-	 * @return the move to make as a Point object
+	 * @return the move to make as a Point object or null if the thinking will
+	 *         be done async
 	 */
 	public abstract Point thinkMove(Board board);
 }

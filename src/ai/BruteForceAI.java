@@ -6,22 +6,28 @@ import common.Board;
 import common.Game;
 import common.Mark;
 
+/**
+ * An Ai that recursively tries all moves up to a certain depth
+ * 
+ * @author Wilbert
+ *
+ */
 public class BruteForceAI extends AIPlayer {
 	private static final int WINVALUE = 100000;
 	// board value at which we can assume that there is a win in the board
-	private static final int WINLIMIT = WINVALUE / 2;
+	protected static final int WINLIMIT = WINVALUE / 2;
 	private int winlength;
-	private int maxFieldIndex;
 	private int boardSize;
-	private int nPlayers;
-	private int layerSize;
-	private int resultMove;
-	private final boolean debugprint = true;
-	private int maxdepth;
-	private int[][][] reverseWins;
+	protected int maxFieldIndex;
+	protected int nPlayers;
+	protected int layerSize;
+	protected final boolean debugprint = true;
+	protected int maxdepth;
+	protected int[][][] reverseWins;
 	
 	public BruteForceAI(String name, int mark) {
 		super(name, mark);
+		maxdepth = 6;
 	}
 	
 	@Override
@@ -40,12 +46,30 @@ public class BruteForceAI extends AIPlayer {
 		int[] fields = board.getFieldsClone();
 		int[] moves = AIUtil.boardColumnIndexes(board);
 		
-		maxdepth = 6;
-		recursiveMove(fields, moves, myMark, Board.INVALID_INDEX, maxdepth);
-		return board.position(resultMove);
+		MoveResult result = recursiveMove(fields, moves, myMark, Board.INVALID_INDEX, maxdepth);
+		
+		return board.position(result.index);
 	}
 	
-	private int recursiveMove(int[] fields, int[] moves, int turnmark, int changedIndex,
+	/**
+	 * Recursively tries moves and returns the resulting board state if all
+	 * players play perfectly from the current board state on
+	 * 
+	 * @param fields
+	 *            the current board state
+	 * @param moves
+	 *            the available moves
+	 * @param turnmark
+	 *            the mark that current has the turn
+	 * @param changedIndex
+	 *            the last changed board index or Board.INVALID_INDEX if the
+	 *            previous move should not be counted
+	 * @param depth
+	 *            the amount of iterations left to go
+	 * @return A moveresult object containing the optimal move and the resulting
+	 *         board value at the end of the tree
+	 */
+	protected MoveResult recursiveMove(int[] fields, int[] moves, int turnmark, int changedIndex,
 			int depth) {
 		int valueChange = 0;
 		if (changedIndex != Board.INVALID_INDEX) {
@@ -53,7 +77,7 @@ public class BruteForceAI extends AIPlayer {
 		}
 		
 		if (depth == 0 || valueChange > WINLIMIT || valueChange < -WINLIMIT) {
-			return valueChange;
+			return new MoveResult(changedIndex, valueChange);
 		}
 		
 		int newturnMark = (turnmark + 1) % nPlayers;
@@ -66,7 +90,7 @@ public class BruteForceAI extends AIPlayer {
 			}
 			fields[move] = turnmark;
 			moves[i] += layerSize;
-			int value = recursiveMove(fields, moves, newturnMark, move, depth - 1);
+			int value = recursiveMove(fields, moves, newturnMark, move, depth - 1).score;
 			fields[move] = Mark.EMPTY;
 			moves[i] -= layerSize;
 			
@@ -80,15 +104,18 @@ public class BruteForceAI extends AIPlayer {
 			}
 		}
 		
-		// TODO
-		// this is a hack to get a second return value without instantiating a
-		// new object at every function iteration (+-100m times)
-		// I'm not completely sure what's actually faster
-		resultMove = bestmove;
-		return valueChange + bestValue;
+		return new MoveResult(bestmove, valueChange + bestValue);
 	}
 	
-	private void printMove(int index, int value, int depth, int turnmark) {
+	/**
+	 * debug function to display the internal move scores
+	 * 
+	 * @param index
+	 * @param value
+	 * @param depth
+	 * @param turnmark
+	 */
+	protected void printMove(int index, int value, int depth, int turnmark) {
 		String str = depth + String.format("%1$" + (13 - depth * 2) + "s", "");
 		str += (turnmark == myMark ? "myturn" : "opturn");
 		str += " " + ((index / boardSize) % boardSize) + "," + (index % boardSize);
@@ -122,7 +149,7 @@ public class BruteForceAI extends AIPlayer {
 	 *            the index that has changed
 	 * @return the change in board value
 	 */
-	private int calculateBoardValueChange(int[] fields, int changedindex) {
+	protected int calculateBoardValueChange(int[] fields, int changedindex) {
 		int value = 0;
 		int oldmark = fields[changedindex];
 		fields[changedindex] = Mark.EMPTY;
@@ -185,6 +212,22 @@ public class BruteForceAI extends AIPlayer {
 			return rowValue;
 		} else {
 			return -rowValue;
+		}
+	}
+	
+	/**
+	 * Represents an outcome of a certain move
+	 * 
+	 * @author Wilbert
+	 *
+	 */
+	protected class MoveResult {
+		protected int index;
+		protected int score;
+		
+		public MoveResult(int index, int score) {
+			this.index = index;
+			this.score = score;
 		}
 	}
 }

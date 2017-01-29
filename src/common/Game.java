@@ -11,7 +11,7 @@ public class Game extends Observable {
 	private ArrayList<? extends Player> players;
 	private int turn;
 	private Point lastmove;
-
+	
 	/**
 	 * Initialize Game, by creating a new board, assigning the players to the
 	 * Game, calling reset to set the initial values.
@@ -27,7 +27,7 @@ public class Game extends Observable {
 		this.players = players;
 		reset();
 	}
-
+	
 	/**
 	 * Sets the initial values of the Game.
 	 */
@@ -37,7 +37,7 @@ public class Game extends Observable {
 		state = GameState.onGoing;
 		lastmove = new Point(0, 0);
 	}
-
+	
 	/**
 	 * Start the game
 	 */
@@ -45,7 +45,7 @@ public class Game extends Observable {
 		setChanged();
 		notifyObservers(EventType.started);
 	}
-
+	
 	/**
 	 * Executes a move if it's the players turn, the game is ongoing, the chosen
 	 * position is empty and available. if the move is successful it also checks
@@ -77,7 +77,7 @@ public class Game extends Observable {
 		board.setField(index, player.getMark());
 		lastmove = new Point(column, row);
 		turn++;
-
+		
 		int winmark = board.findWinner();
 		if (winmark != Mark.EMPTY) {
 			state = GameState.won;
@@ -90,7 +90,7 @@ public class Game extends Observable {
 			getTurn().obtainTurn();
 		}
 	}
-
+	
 	/**
 	 * returns the player whose turn it is next turn.
 	 * 
@@ -99,7 +99,7 @@ public class Game extends Observable {
 	public Player getTurn() {
 		return players.get(turn % players.size());
 	}
-
+	
 	/**
 	 * returns the player whose turn it was previous turn.
 	 * 
@@ -108,7 +108,7 @@ public class Game extends Observable {
 	public Player getPreviousTurn() {
 		return players.get((turn + players.size() - 1) % players.size());
 	}
-
+	
 	/**
 	 * getter game state.
 	 * 
@@ -117,7 +117,7 @@ public class Game extends Observable {
 	public GameState getState() {
 		return state;
 	}
-
+	
 	/**
 	 * getter last move
 	 * 
@@ -126,7 +126,7 @@ public class Game extends Observable {
 	public Point getLastMove() {
 		return lastmove;
 	}
-
+	
 	/**
 	 * Checks if it's the given player's turn.
 	 * 
@@ -137,7 +137,7 @@ public class Game extends Observable {
 	private boolean hasTurn(Player player) {
 		return getTurn() == player;
 	}
-
+	
 	/**
 	 * getter players list
 	 * 
@@ -146,19 +146,19 @@ public class Game extends Observable {
 	public ArrayList<? extends Player> getPlayers() {
 		return players;
 	}
-
+	
 	public static enum GameState {
 		onGoing, won, draw
 	}
-
+	
 	public static enum EventType {
 		started, placed
 	}
-
+	
 	public Board getBoard() {
 		return board;
 	}
-
+	
 	@Override
 	public String toString() {
 		String str = board.toString();

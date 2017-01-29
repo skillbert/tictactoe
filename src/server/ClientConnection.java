@@ -3,9 +3,9 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
-import ai.BruteForceAI;
 import ai.RandomAi;
 import ai.SimpleAI;
+import ai.ThreadedBruteforceAI;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
@@ -138,7 +138,8 @@ public class ClientConnection {
 				bot = new SimpleAI("OK_bot", Mark.YELLOW);
 				break;
 			case "hard":
-				bot = new BruteForceAI("GGWP_bot", Mark.YELLOW);
+				bot = new ThreadedBruteforceAI("GGWP_bot", Mark.YELLOW);
+				// bot = new BruteForceAI("GGWP_bot", Mark.YELLOW);
 				break;
 			default:
 				sendString(
