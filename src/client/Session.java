@@ -178,45 +178,50 @@ public class Session extends Observable {
 	 * @param packet
 	 */
 	private void parseMessage(byte[] packet) {
-		String message = protocol.parsePacket(packet);
-		if (message == null) {
+		String messages = protocol.parsePacket(packet);
+		if (messages == null) {
 			return;
 		}
 		
-		CommandParser command = new CommandParser(message);
-		try {
-			switch (command.getCommand()) {
-				case Protocol.ERROR:
-					parseError(command.nextString(), command.remainingString());
-					break;
-				
-				case Protocol.STARTGAME:
-					startGame(command.nextString(), command.nextString());
-					break;
-				
-				case Protocol.WAITING:
-					setState(SessionState.queued);
-					break;
-				
-				case Protocol.LOBBY:
-					setState(SessionState.lobby);
-					break;
-				
-				case Protocol.PLAYERS:
-					updatePlayerLobbyData(command.remainingString());
-					break;
+		for (String message:messages.split("\n")){
+			CommandParser command = new CommandParser(message);
+			System.out.println("server msg > " + message + "<");
+			
+			try {
+				switch (command.getCommand()) {
+					case Protocol.ERROR:
+						parseError(command.nextString(), command.remainingString());
+						break;
 					
-				case Protocol.PLACED:
-					parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
-							command.nextString(), command.nextString());
-					break;
-				
-				default:
-					// TODO ignore this or do something else?
-					System.out.println("unknown command from server");
+					case Protocol.STARTGAME:
+						startGame(command.nextString(), command.nextString());
+						break;
+					
+					case Protocol.WAITING:
+						setState(SessionState.queued);
+						break;
+					
+					case Protocol.LOBBY:
+						setState(SessionState.lobby);
+						break;
+					
+					case Protocol.PLAYERS:
+						System.out.println("PLAYERS");
+						updatePlayerLobbyData(command.remainingString());
+						break;
+						
+					case Protocol.PLACED:
+						parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
+								command.nextString(), command.nextString());
+						break;
+					
+					default:
+						// TODO ignore this or do something else?
+						System.out.println("unknown command from server");
+				}
+			} catch (CommandFormatException ex) {
+				System.out.println("Invalid command received from server");
 			}
-		} catch (CommandFormatException ex) {
-			System.out.println("Invalid command received from server");
 		}
 	}
 	
@@ -228,6 +233,8 @@ public class Session extends Observable {
 			String[] ps = playerState.split("-");
 			playerLobbyData.put(ps[0], ps[1]);
 		}
+		System.out.println("Notifiying lobby");
+		setChanged();
 		notifyObservers(Ui.UpdateType.lobby);
 	}
 	

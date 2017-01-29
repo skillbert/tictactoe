@@ -76,6 +76,7 @@ public class Gui extends JFrame implements Ui {
 	
 	@Override
 	public void update(Observable o, Object arg) {
+		System.out.println(arg.toString());
 		switch ((Ui.UpdateType) arg) {
 			case state:
 				stateChanged();
@@ -86,6 +87,7 @@ public class Gui extends JFrame implements Ui {
 			case lobby:
 				System.out.println("lobbypanel");
 				showPanel(lobbyPanel);
+				break;
 		}
 	}
 	

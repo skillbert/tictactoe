@@ -15,7 +15,6 @@ import client.gui.Gui;
 
 public class LobbyPanel extends Panel {
 	private Gui gui;
-	private JScrollPane tableContainer;
 	private DefaultTableModel playerTableModel;
 	private JButton queueButton;
 	private JButton cancelQueueButton;
@@ -31,21 +30,20 @@ public class LobbyPanel extends Panel {
 		cancelQueueButton.addActionListener((ActionEvent event) -> {
 			cancelQueue();
 		});
+		
+
 	}
 	
 	@Override
 	public JPanel getPanel() {
 		panel.removeAll();
-		
 		Map<String, String> playerLobbyData = gui.getSession().getPlayerLobbyData();
 		playerTableModel = toTableModel(playerLobbyData);
 		JTable playerTable = new JTable(playerTableModel);
-		
 		panel.add(new JScrollPane(playerTable), "span 2");
 		panel.add(queueButton);
 		panel.add(cancelQueueButton);
-		System.out.println("Updated LobbyPanel");
-		return this.panel;
+		return this.panel;	
 	}
 	
 	public static DefaultTableModel toTableModel(Map<?,?> map) {
