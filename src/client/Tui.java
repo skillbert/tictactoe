@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
 
-import command.*;
+import client.command.*;
 import common.Game;
 import common.SessionState;
 
@@ -14,23 +14,14 @@ public class Tui implements Ui {
 	private PrintStream out;
 	private Scanner in;
 	private Session session;
-	private Map<String, CommandHandler> commands = new HashMap<String, CommandHandler>();
+	public final Map<String, CommandHandler> commands;
 	
 	public Tui(Session session) {
 		out = System.out;
 		in = new Scanner(System.in);
 		this.session = session;
-		
-		commands.put("connect", new ConnectHandler(session, 2, "<host> [port]", SessionState.disconnected,
-				"Already connected"));
-		commands.put("login", new LoginHandler(session, 2, "<name>", SessionState.authenticating,
-				"Not connected or already logged in"));
-		commands.put("queue", new QueueHandler(session, 1, "", SessionState.lobby,
-				"Already queued or not in the lobby"));
-		commands.put("test", 
-				new TestHandler(session, 1, "", SessionState.disconnected, "Already connected"));
-		commands.put("place",
-				new PlaceHandler(session, 3, "<x> <y>", SessionState.ingame, "Not in a game"));
+		Commands Commands = new Commands(this.session);
+		commands = Commands.commands;
 	}
 	
 	@Override
@@ -100,6 +91,8 @@ public class Tui implements Ui {
 				out.println("entered game");
 				gameChanged();
 				break;
+			case lobbyupdate:
+				session.setState(SessionState.lobby);
 		}
 	}
 	

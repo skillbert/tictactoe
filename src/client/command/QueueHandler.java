@@ -1,6 +1,7 @@
-package command;
+package client.command;
 
 import client.Session;
+import common.Protocol;
 import common.SessionState;
 
 public class QueueHandler extends CommandHandler {

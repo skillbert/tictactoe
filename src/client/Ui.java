@@ -4,7 +4,7 @@ import java.util.Observer;
 
 public interface Ui extends Observer {
 	public static enum UpdateType {
-		state, gamemove
+		state, gamemove, lobby
 	}
 
 	/**

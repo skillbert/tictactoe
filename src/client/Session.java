@@ -2,9 +2,17 @@ package client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Optional;
 
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
+
+import client.gui.Gui;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
@@ -24,6 +32,7 @@ public class Session extends Observable {
 	private Ui ui;
 	private String myName;
 	private SocketProtocol protocol;
+	private Map<String, String> playerLobbyData = new HashMap<String, String>();
 	
 	/**
 	 * Initializes a new Session by creating a new Peerplayer (network player)
@@ -32,7 +41,7 @@ public class Session extends Observable {
 	public Session() {
 		setState(SessionState.disconnected);
 		myName = "";
-		ui = new Tui(this);
+		ui = new Gui(this);
 		this.addObserver(ui);
 	}
 	
@@ -98,7 +107,7 @@ public class Session extends Observable {
 	 *            chosen y / row
 	 */
 	public void commitMove(int x, int y) {
-		sendMessage("place " + x + " " + y);
+		sendMessage(Protocol.PLACE + Protocol.DELIMITER + x + Protocol.DELIMITER + y);
 	}
 	
 	/**
@@ -109,7 +118,7 @@ public class Session extends Observable {
 	 */
 	public void login(String name) {
 		myName = name;
-		sendMessage("login " + name);
+		sendMessage(Protocol.LOGIN + Protocol.DELIMITER + name);
 	}
 	
 	/**
@@ -121,7 +130,19 @@ public class Session extends Observable {
 			return;
 		}
 		
-		sendMessage("queue");
+		sendMessage(Protocol.QUEUE);
+	}
+	
+	/**
+	 * Cancels queue for a game if the current SessionState is queued.
+	 */
+	public void cancelQueueGame() {
+		if (state != SessionState.queued) {
+			ui.showModalMessage("You need to be in the lobby to queue for a game.");
+			return;
+		}
+		
+		sendMessage(Protocol.LEAVEQUEUE);
 	}
 	
 	/**
@@ -181,6 +202,10 @@ public class Session extends Observable {
 					setState(SessionState.lobby);
 					break;
 				
+				case Protocol.PLAYERS:
+					updatePlayerLobbyData(command.remainingString());
+					break;
+					
 				case Protocol.PLACED:
 					parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
 							command.nextString(), command.nextString());
@@ -193,6 +218,21 @@ public class Session extends Observable {
 		} catch (CommandFormatException ex) {
 			System.out.println("Invalid command received from server");
 		}
+	}
+	
+	private void updatePlayerLobbyData(String playerStr){
+		System.out.println(playerStr);
+		playerLobbyData = new HashMap<String, String>();
+		String[] playerStates = playerStr.split(" ");
+		for (String playerState:playerStates) {
+			String[] ps = playerState.split("-");
+			playerLobbyData.put(ps[0], ps[1]);
+		}
+		notifyObservers(Ui.UpdateType.lobby);
+	}
+	
+	public Map<String, String> getPlayerLobbyData() {
+		return this.playerLobbyData;
 	}
 	
 	/**
@@ -297,6 +337,7 @@ public class Session extends Observable {
 		// disconnect/throw/ingore?
 		System.out.println("Server protocol error: " + reason);
 	}
+	
 }
 
 

@@ -182,7 +182,7 @@ public class ClientConnection {
 			return;
 		}
 		state = SessionState.queued;
-		sendString("waiting");
+		sendString(Protocol.WAITING);
 		server.findQueue();
 	}
 
@@ -195,6 +195,8 @@ public class ClientConnection {
 			return;
 		}
 		state = SessionState.lobby;
+		sendString(Protocol.LOBBY);
+		server.broadcastPlayers();
 	}
 
 	/**
@@ -222,7 +224,7 @@ public class ClientConnection {
 
 		this.name = name;
 		setState(SessionState.lobby);
-		sendString("lobby");
+		sendString(Protocol.LOBBY);
 
 		server.broadcastPlayers();
 	}

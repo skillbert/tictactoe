@@ -1,0 +1,26 @@
+package client.command;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import client.Session;
+import common.SessionState;
+
+public final class Commands {
+	public final Map<String, CommandHandler> commands = new HashMap<String, CommandHandler>();
+	
+	public Commands(Session session) {
+		commands.put("connect", new ConnectHandler(session, 2, "<host> [port]", SessionState.disconnected,
+				"Already connected"));
+		commands.put("login", new LoginHandler(session, 2, "<name>", SessionState.authenticating,
+				"Not connected or already logged in"));
+		commands.put("queue", new QueueHandler(session, 1, "", SessionState.lobby,
+				"Already queued or not in the lobby"));
+		commands.put("cancel_queue", new CancelQueueHandler(session, 1, "", SessionState.queued,
+				"Not queued"));
+		commands.put("test", 
+				new TestHandler(session, 1, "", SessionState.disconnected, "Already connected"));
+		commands.put("place",
+				new PlaceHandler(session, 3, "<x> <y>", SessionState.ingame, "Not in a game"));
+	}
+}

@@ -76,6 +76,7 @@ public class Server implements Observer {
 		client.disconnect();
 		clients.remove(client);
 		System.out.println("Client disconnected, clients left: " + clients.size());
+		broadcastPlayers();
 	}
 
 	/**
@@ -96,6 +97,7 @@ public class Server implements Observer {
 			}
 			startGame(players);
 		}
+		broadcastPlayers();
 	}
 
 	/**
@@ -155,7 +157,7 @@ public class Server implements Observer {
 			if (!con.isLoggedIn()) {
 				continue;
 			}
-			con.sendString("players " + players);
+			con.sendString(Protocol.PLAYERS + Protocol.DELIMITER + players);
 		}
 	}
 
