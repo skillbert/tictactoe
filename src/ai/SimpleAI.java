@@ -1,4 +1,4 @@
-package AI;
+package ai;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -16,18 +16,18 @@ import common.Mark;
 public class SimpleAI extends AIPlayer {
 	private static final int INSTANTWIN = 1000000;
 	private static final int LOSSAFTER = 1000;
-
+	
 	public SimpleAI(String name, int mark) {
 		super(name, mark);
 	}
-
+	
 	@Override
 	public Point thinkMove(Board board) {
 		ArrayList<Integer> moves = AIUtil.possibleMoves(board);
-
+		
 		int[] defscores = new int[board.getSize() * board.getSize() * board.getSize()];
 		int[] attscores = new int[board.getSize() * board.getSize() * board.getSize()];
-
+		
 		// loop all win conditions in a reverse loop so we can remove indexes
 		// from it
 		for (int i = wincons.size() - 1; i >= 0; i--) {
@@ -39,7 +39,7 @@ public class SimpleAI extends AIPlayer {
 					markcount[mark]++;
 				}
 			}
-
+			
 			// count the amount of different players that have a mark
 			int ninvolved = 0;
 			for (int mark = 0; mark < markcount.length; mark++) {
@@ -48,14 +48,14 @@ public class SimpleAI extends AIPlayer {
 				}
 				ninvolved++;
 			}
-
+			
 			// remove the wincon if it's dead
 			if (ninvolved > 1) {
 				System.out.println("removed wincon");
 				wincons.remove(i);
 				continue;
 			}
-
+			
 			// count the value we want to give to this spot
 			int defscore = 1;
 			int attscore = 1;
@@ -78,11 +78,11 @@ public class SimpleAI extends AIPlayer {
 				attscores[index] += attscore;
 			}
 		}
-
+		
 		// check what our opponent gets access to the turn after
 		// TODO
-
-
+		
+		
 		// choose the best spot and place
 		int best = 0;
 		int bestindex = Board.INVALID_INDEX;
@@ -96,7 +96,7 @@ public class SimpleAI extends AIPlayer {
 		}
 		return board.position(bestindex);
 	}
-
+	
 }
 
 

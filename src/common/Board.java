@@ -17,14 +17,22 @@ public class Board {
 	public final int winLength = DIM;
 	private ArrayList<int[]> wincons;
 	private int[] fields;
-
+	
+	
 	/**
-	 * fields represent the board. column/row to index. 
-	 * c1 c2 c3 c4 
-	 * r1 0 4 8 12
-	 * r2 1 5 9 13 
-	 * r3 2 6 10 14 
-	 * r4 3 7 11 15
+	 * fields represent the board. column/row to index.
+	 * 
+	 * Sorry the code formatter really doesn't like this table
+	 * 
+	 * ____c1__c2__c3__c4
+	 * 
+	 * r1__0___4___8___12
+	 * 
+	 * r2__1___5___9___13
+	 * 
+	 * r3__2___6___10__14
+	 * 
+	 * r4__3___7___11__15
 	 * 
 	 * DIM of these 2D grids are stacked on top of each other to achieve a 3D
 	 * board to get the index of a certain row and column combination you have
@@ -33,10 +41,10 @@ public class Board {
 	public Board() {
 		fields = new int[DIM * DIM * DIM];
 		Arrays.fill(fields, Mark.EMPTY);
-
+		
 		initializeWincons();
 	}
-
+	
 	/**
 	 * Returns a new Board object with the same fields marked as the current
 	 * board
@@ -48,7 +56,7 @@ public class Board {
 		IntStream.range(0, DIM * DIM * DIM).forEach(i -> board.setField(i, this.getField(i)));
 		return board;
 	}
-
+	
 	/**
 	 * Calculates all win conditions for this board.
 	 */
@@ -62,9 +70,10 @@ public class Board {
 					if (rowstep == 0 && colstep == 0 && heightstep == 0) {
 						continue;
 					}
-					int[] step = new int[] { rowstep, colstep, heightstep };
+					int[] step = new int[] {rowstep, colstep, heightstep };
 					// don't add existing but mirrored steps
-					if (stepdirs.stream().anyMatch(s -> s[0] == -step[0] && s[1] == -step[1] && s[2] == -step[2])) {
+					if (stepdirs.stream().anyMatch(
+							s -> s[0] == -step[0] && s[1] == -step[1] && s[2] == -step[2])) {
 						continue;
 					}
 					stepdirs.add(step);
@@ -89,18 +98,19 @@ public class Board {
 						}
 						int[] wincon = new int[wl];
 						for (int i = 0; i < wl; i++) {
-							wincon[i] = index(row + i * step[0], col + i * step[1], height + i * step[2]);
+							wincon[i] = index(row + i * step[0], col + i * step[1],
+									height + i * step[2]);
 						}
 						wincons.add(wincon);
 					}
 				}
 			}
 		}
-
+		
 		// wincons.stream().forEach(w -> System.out.println(w[0] + " " + w[1] +
 		// " " + w[2] + " " + w[3]));
 	}
-
+	
 	/**
 	 * Return the index of the field at row, column, height.
 	 * 
@@ -112,7 +122,7 @@ public class Board {
 	public int index(int row, int column, int height) {
 		return row + (column * DIM) + (height * DIM * DIM);
 	}
-
+	
 	/**
 	 * Gets the x,y position of a field with the given index
 	 * 
@@ -122,7 +132,7 @@ public class Board {
 	public Point position(int index) {
 		return new Point((index / DIM) % DIM, index % DIM);
 	}
-
+	
 	/**
 	 * Returns the index where a piece will fall if inserted at the given row
 	 * and column, returns INVALID_INDEX in case the column is full
@@ -140,7 +150,7 @@ public class Board {
 		}
 		return INVALID_INDEX;
 	}
-
+	
 	/**
 	 * Returns true if the field index is within range.
 	 * 
@@ -150,11 +160,11 @@ public class Board {
 	public boolean isField(int index) {
 		return 0 <= index && index < DIM * DIM * DIM;
 	}
-
+	
 	public boolean isField(int row, int column, int height) {
 		return row >= 0 && row < DIM && column >= 0 && column < DIM && height >= 0 && height < DIM;
 	}
-
+	
 	/**
 	 * Returns Mark at index in fields
 	 * 
@@ -164,7 +174,7 @@ public class Board {
 	public int getField(int index) {
 		return fields[index];
 	}
-
+	
 	/**
 	 * Sets index index in fields to Mark m
 	 * 
@@ -174,7 +184,7 @@ public class Board {
 	public void setField(int index, int m) {
 		fields[index] = m;
 	}
-
+	
 	/**
 	 * Returns true if the field below the chosen field does not exist or is
 	 * filled.
@@ -186,14 +196,14 @@ public class Board {
 		return getField(index) == Mark.EMPTY
 				&& (!isField(index - DIM * DIM) || getField(index - DIM * DIM) != Mark.EMPTY);
 	}
-
+	
 	/**
 	 * @return true if the board is full
 	 */
 	public boolean isFull() {
 		return IntStream.range(0, DIM * DIM * DIM).allMatch(i -> getField(i) != Mark.EMPTY);
 	}
-
+	
 	/**
 	 * Determines if the board has a winner and returns the winner
 	 * 
@@ -217,32 +227,36 @@ public class Board {
 		}
 		return Mark.EMPTY;
 	}
-
+	
 	/**
 	 * Resets the board
 	 */
 	public void reset() {
 		Arrays.fill(fields, Mark.EMPTY);
 	}
-
+	
 	public int getSize() {
 		return DIM;
 	}
-
+	
 	public ArrayList<int[]> getWinConditions() {
 		return wincons;
 	}
-
+	
 	public int getWinLength() {
 		return DIM;
 	}
-
+	
+	public int[] getFieldsClone() {
+		return fields.clone();
+	}
+	
 	@Override
 	public String toString() {
 		String str = "      1      2      3      4";
 		for (int i = 0; i < DIM; i++) {
 			str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
-			str += String.valueOf(i+1) + " ";
+			str += String.valueOf(i + 1) + " ";
 			for (int j = 0; j < DIM; j++) {
 				str += "| ";
 				for (int k = 0; k < DIM; k++) {
@@ -254,5 +268,9 @@ public class Board {
 		}
 		str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n";
 		return str;
+	}
+	
+	public int getFieldLength() {
+		return DIM * DIM * DIM;
 	}
 }

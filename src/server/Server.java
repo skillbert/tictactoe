@@ -21,7 +21,7 @@ public class Server implements Observer {
 	private AsynchronousServerSocketChannel ssocket;
 	private ArrayList<ClientConnection> clients;
 	private ArrayList<Game> activeGames;
-
+	
 	public static void main(String[] args) throws IOException {
 		try {
 			new Server(Protocol.DEFAULTPORT);
@@ -31,7 +31,7 @@ public class Server implements Observer {
 		// keeps the server running until some user input
 		System.in.read();
 	}
-
+	
 	/**
 	 * Creates a new game server and starts listening on the given port
 	 * 
@@ -47,11 +47,12 @@ public class Server implements Observer {
 		startAcceptClient();
 		System.out.println("Server started and listening on port " + port);
 	}
-
+	
 	public void startAcceptClient() {
-		ssocket.accept(null, new Util.SimpleHandler<>(con -> connectSocket(con), ex -> ex.printStackTrace()));
+		ssocket.accept(null,
+				new Util.SimpleHandler<>(con -> connectSocket(con), ex -> ex.printStackTrace()));
 	}
-
+	
 	/**
 	 * Deals with new clients and adds them to the game
 	 * 
@@ -64,7 +65,7 @@ public class Server implements Observer {
 		System.out.println("client connected, total: " + clients.size());
 		startAcceptClient();
 	}
-
+	
 	/**
 	 * removes a client from the server and closes the connection is the client
 	 * is still connected
@@ -78,7 +79,7 @@ public class Server implements Observer {
 		System.out.println("Client disconnected, clients left: " + clients.size());
 		broadcastPlayers();
 	}
-
+	
 	/**
 	 * Checks all clients and starts a game if enough players are queued
 	 */
@@ -90,7 +91,8 @@ public class Server implements Observer {
 			}
 		}
 		System.out.println("total queued: " + cons.size());
-		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons.size(); offset += Game.NUMBER_PLAYERS) {
+		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons
+				.size(); offset += Game.NUMBER_PLAYERS) {
 			ArrayList<Player> players = new ArrayList<>();
 			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
 				players.add(new RemotePlayer(cons.get(offset + i), i));
@@ -99,7 +101,7 @@ public class Server implements Observer {
 		}
 		broadcastPlayers();
 	}
-
+	
 	/**
 	 * Start a game with the players in players
 	 * 
@@ -117,14 +119,14 @@ public class Server implements Observer {
 		broadcastPlayers();
 		game.addObserver(this);
 	}
-
+	
 	public void closeGame(Game game) {
 		System.out.println("Closing game");
 		activeGames.remove(game);
 		game.deleteObserver(this);
 		broadcastPlayers();
 	}
-
+	
 	/**
 	 * Find the player using playername
 	 * 
@@ -141,7 +143,7 @@ public class Server implements Observer {
 		}
 		return null;
 	}
-
+	
 	public void broadcastPlayers() {
 		String players = "";
 		for (ClientConnection con : clients) {
@@ -160,7 +162,7 @@ public class Server implements Observer {
 			con.sendString(Protocol.PLAYERS + Protocol.DELIMITER + players);
 		}
 	}
-
+	
 	@Override
 	public void update(Observable o, Object arg) {
 		if (o instanceof Game) {
