@@ -1,4 +1,4 @@
-package AI;
+package ai;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -13,9 +13,10 @@ public abstract class AIPlayer implements Player {
 	protected ArrayList<int[]> wincons;
 	protected int myMark;
 	private String name;
-
+	
 	/**
 	 * Initializes an AIPlayer with name and mark
+	 * 
 	 * @param name
 	 *            AIPlayer name to use
 	 * @param mark
@@ -25,44 +26,46 @@ public abstract class AIPlayer implements Player {
 		this.myMark = mark;
 		this.name = name;
 	}
-
+	
 	@Override
 	public void setGame(Game game) {
 		this.game = game;
 		game.addObserver(this);
 		wincons = (ArrayList<int[]>) game.getBoard().getWinConditions().clone();
 	}
-
+	
 	@Override
 	public String getName() {
 		return name;
 	}
-
+	
 	@Override
 	public int getMark() {
 		return myMark;
 	}
-
+	
 	@Override
 	public void showModalMessage(String message) {
 	}
-
+	
 	@Override
 	public void obtainTurn() {
 		Point move = thinkMove(game.getBoard());
 		game.commitMove(this, move.y, move.x);
 		int a = 0;
 	}
-
+	
 	@Override
 	public void update(Observable o, Object arg) {
 	}
-
+	
 	/**
-	 * Performs the calculations to determine the move to make and returns the move
+	 * Performs the calculations to determine the move to make and returns the
+	 * move
+	 * 
 	 * @param board
-	 *             Board object to use
-	 * @return the move to make as a Point object 
+	 *            Board object to use
+	 * @return the move to make as a Point object
 	 */
 	public abstract Point thinkMove(Board board);
 }
