@@ -3,7 +3,9 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
-import AI.SimpleAI;
+import ai.BruteForceAI;
+import ai.RandomAi;
+import ai.SimpleAI;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
@@ -26,7 +28,7 @@ public class ClientConnection {
 	private RemotePlayer player;
 	private boolean isBasicSocket = true;
 	private SocketProtocol socketProtocol;
-
+	
 	/**
 	 * Initializes a ClientConnection
 	 * 
@@ -39,15 +41,15 @@ public class ClientConnection {
 		this.server = server;
 		state = SessionState.authenticating;
 		this.name = "";
-
+		
 		sock = new AsyncSocket(asyncChannel);
 		sock.onClose(() -> server.disconnectClient(this));
 		sock.onPacket(packet -> parsePacket(packet));
-
+		
 		socketProtocol = new DirectProtocol();
 		socketProtocol.setSocket(sock);
 	}
-
+	
 	/**
 	 * Parses a raw packet from connection and passes it on to the correct
 	 * module
@@ -66,19 +68,19 @@ public class ClientConnection {
 				System.out.println("websocket client connected");
 				return;
 			}
-
+			
 			// simple http request
 			if (BasicHttpServer.tryRespondGET(packet, sock)) {
 				return;
 			}
 		}
-
+		
 		String message = socketProtocol.parsePacket(packet);
 		if (message != null) {
 			parseMessage(message);
 		}
 	}
-
+	
 	/**
 	 * Parse a client message according to the protocol
 	 * 
@@ -87,37 +89,37 @@ public class ClientConnection {
 	 */
 	private void parseMessage(String message) {
 		System.out.println(name + "\t>> " + message);
-
+		
 		CommandParser command = new CommandParser(message);
 		try {
 			switch (command.getCommand()) {
-			case Protocol.LOGIN:
-				login(command.nextString());
-				break;
-			case Protocol.QUEUE:
-				queueGame();
-				break;
-			case Protocol.LEAVEQUEUE:
-				unQueueGame();
-				break;
-			case Protocol.PLACE:
-				commitMove(command.nextInt(), command.nextInt());
-				break;
-			case Protocol.BOT:
-				startBotGame(command.nextString());
-				break;
-			case Protocol.LEAVEGAME:
-				leaveGame();
-				break;
-			default:
-				sendString(Protocol.UNKNOWNCOMMAND);
-				break;
+				case Protocol.LOGIN:
+					login(command.nextString());
+					break;
+				case Protocol.QUEUE:
+					queueGame();
+					break;
+				case Protocol.LEAVEQUEUE:
+					unQueueGame();
+					break;
+				case Protocol.PLACE:
+					commitMove(command.nextInt(), command.nextInt());
+					break;
+				case Protocol.BOT:
+					startBotGame(command.nextStringOpt("medium"));
+					break;
+				case Protocol.LEAVEGAME:
+					leaveGame();
+					break;
+				default:
+					sendString(Protocol.UNKNOWNCOMMAND);
+					break;
 			}
 		} catch (CommandFormatException ex) {
 			sendString(Protocol.ERROR_INVALIDCOMMAND);
 		}
 	}
-
+	
 	/**
 	 * Starts a new bot game with the current player and the choosen bot
 	 */
@@ -126,16 +128,30 @@ public class ClientConnection {
 			showModalMessage("You need to be in the lobby to start a new game");
 			return;
 		}
-		// TODO implement other bots
-
+		// TODO do something to make sure the bot name is available
+		Player bot;
+		switch (botname) {
+			case "easy":
+				bot = new RandomAi("Shitty_bot", Mark.YELLOW);
+				break;
+			case "medium":
+				bot = new SimpleAI("OK_bot", Mark.YELLOW);
+				break;
+			case "hard":
+				bot = new BruteForceAI("GGWP_bot", Mark.YELLOW);
+				break;
+			default:
+				sendString(
+						"error errorMessage Uknown bot type. Bot types are easy, medium and hard.");
+				return;
+		}
 		ArrayList<Player> players = new ArrayList<>();
 		players.add(new RemotePlayer(this, Mark.RED));
-		// TODO do something to make sure this name is available
-		players.add(new SimpleAI("OK_Bot", Mark.YELLOW));
+		players.add(bot);
 		server.startGame(players);
 	}
-
-
+	
+	
 	/**
 	 * leaves a game if the current SessionState is ingame, sets the
 	 * SessionState to lobby if successful.
@@ -149,7 +165,7 @@ public class ClientConnection {
 		setPlayer(null);
 		// TODO tell our opponent about it, can't with protocol
 	}
-
+	
 	/**
 	 * Executes a move, next turn if successful.
 	 * 
@@ -171,7 +187,7 @@ public class ClientConnection {
 		}
 		game.commitMove(player, col, row);
 	}
-
+	
 	/**
 	 * Sets the SessionState to queued if the current SessionState is lobby.
 	 * Calls server.findQueue() if succesful.
@@ -185,7 +201,7 @@ public class ClientConnection {
 		sendString("waiting");
 		server.findQueue();
 	}
-
+	
 	/**
 	 * Sets the SessionState to lobby if the current SessionState is queued.
 	 */
@@ -196,7 +212,7 @@ public class ClientConnection {
 		}
 		state = SessionState.lobby;
 	}
-
+	
 	/**
 	 * Attempts to log in with the given name, will send errors if the name is
 	 * not available or valid or if this connection can not log in at this
@@ -210,7 +226,7 @@ public class ClientConnection {
 			showModalMessage("Already logged in. You can't set your name at this time");
 			return;
 		}
-
+		
 		if (!name.matches("^\\w+$")) {
 			sendString("error invalidCharacters");
 			return;
@@ -219,14 +235,14 @@ public class ClientConnection {
 			sendString("error nameTaken");
 			return;
 		}
-
+		
 		this.name = name;
 		setState(SessionState.lobby);
 		sendString("lobby");
-
+		
 		server.broadcastPlayers();
 	}
-
+	
 	/**
 	 * disconnect by closing the this.sock
 	 */
@@ -238,7 +254,7 @@ public class ClientConnection {
 			server.broadcastPlayers();
 		}
 	}
-
+	
 	/**
 	 * getter name
 	 * 
@@ -247,7 +263,7 @@ public class ClientConnection {
 	public String getName() {
 		return name;
 	}
-
+	
 	/**
 	 * getter state
 	 * 
@@ -256,7 +272,7 @@ public class ClientConnection {
 	public SessionState getState() {
 		return state;
 	}
-
+	
 	/**
 	 * setter this.state
 	 * 
@@ -265,7 +281,7 @@ public class ClientConnection {
 	public void setState(SessionState state) {
 		this.state = state;
 	}
-
+	
 	/**
 	 * Send an error message
 	 * 
@@ -275,7 +291,7 @@ public class ClientConnection {
 	public void showModalMessage(String message) {
 		sendString("error errorMessage " + message);
 	}
-
+	
 	/**
 	 * Send a String str trough the AsyncSocket this.sock
 	 * 
@@ -286,7 +302,7 @@ public class ClientConnection {
 		System.out.println(name + "\t<< " + str);
 		sock.sendPacket(socketProtocol.textPacket(str));
 	}
-
+	
 	/**
 	 * setter server Player
 	 * 
@@ -296,7 +312,7 @@ public class ClientConnection {
 	public void setPlayer(RemotePlayer player) {
 		this.player = player;
 	}
-
+	
 	/**
 	 * getter server Player
 	 * 
@@ -305,7 +321,7 @@ public class ClientConnection {
 	public Player getPlayer() {
 		return player;
 	}
-
+	
 	/**
 	 * getter Server
 	 * 
@@ -314,14 +330,15 @@ public class ClientConnection {
 	public Server getServer() {
 		return server;
 	}
-
+	
 	/**
 	 * Gets whether this client connection is a player that is logged in
 	 * 
 	 * @return
 	 */
 	public boolean isLoggedIn() {
-		return state == SessionState.lobby || state == SessionState.queued || state == SessionState.ingame;
+		return state == SessionState.lobby || state == SessionState.queued
+				|| state == SessionState.ingame;
 	}
 }
 
