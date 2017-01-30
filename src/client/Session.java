@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Optional;
-import client.gui.Gui;
+
+import client.Ui.UpdateType;
 import common.AsyncSocket;
+import common.Board;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
 import common.DirectProtocol;
@@ -26,6 +28,7 @@ public class Session extends Observable {
 	private Ui ui;
 	private SocketProtocol protocol;
 	private Map<String, String> playerLobbyData = new HashMap<String, String>();
+	private GameInvitation invitation;
 	
 	/**
 	 * Initializes a new Session by creating a new Peerplayer (network player)
@@ -113,6 +116,52 @@ public class Session extends Observable {
 	}
 	
 	/**
+	 * sends an invite for a custom game with given board size to the specified
+	 * players
+	 * 
+	 * @param boardSize
+	 *            the size of the custom game board
+	 * @param players
+	 *            a list of player names to invite
+	 */
+	public void invite(int boardSize, ArrayList<String> players) {
+		if (state != SessionState.lobby) {
+			ui.showModalMessage("You need to be in the lobby to invite players");
+			return;
+		}
+		if (players.size() == 0) {
+			ui.showModalMessage("You need to invite at least one player");
+			return;
+		}
+		
+		String playerstr = "";
+		for (String player : players) {
+			playerstr += " " + player;
+		}
+		
+		setState(SessionState.invited);
+		sendMessage(Protocol.INVITE + " " + boardSize + playerstr);
+	}
+	
+	/**
+	 * Replies to an invite
+	 * 
+	 * @param accept
+	 *            true is accepted, false if the invite is rejected
+	 */
+	public void replyInvite(boolean accept) {
+		if (state != SessionState.invited) {
+			ui.showModalMessage("You don't have any invitations");
+			return;
+		}
+		if (!accept) {
+			setState(SessionState.lobby);
+		}
+		
+		sendMessage(Protocol.REPLY + " " + (accept ? "yes" : "no"));
+	}
+	
+	/**
 	 * Queues for a game if the current SessionState is lobby.
 	 */
 	public void queueGame() {
@@ -174,7 +223,7 @@ public class Session extends Observable {
 			return;
 		}
 		
-		for (String message:messages.split("\n")){
+		for (String message : messages.split("\n")) {
 			CommandParser command = new CommandParser(message);
 			
 			try {
@@ -184,7 +233,11 @@ public class Session extends Observable {
 						break;
 					
 					case Protocol.STARTGAME:
-						startGame(command.nextString(), command.nextString());
+						startGame(Board.DEFAULTSIZE, command.remainingArguments());
+						break;
+					
+					case Protocol.STARTCUSTOMGAME:
+						startGame(command.nextInt(), command.remainingArguments());
 						break;
 					
 					case Protocol.WAITING:
@@ -198,10 +251,14 @@ public class Session extends Observable {
 					case Protocol.PLAYERS:
 						updatePlayerLobbyData(command.remainingString());
 						break;
-						
+					
 					case Protocol.PLACED:
 						parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
 								command.nextString(), command.nextString());
+						break;
+					
+					case Protocol.INVITATION:
+						parseInvitation(command.nextInt(), command.nextString());
 						break;
 				}
 			} catch (CommandFormatException ex) {
@@ -210,10 +267,32 @@ public class Session extends Observable {
 		}
 	}
 	
-	private void updatePlayerLobbyData(String playerStr){
+	/**
+	 * Handles new invitations from the server
+	 * 
+	 * @param boardSize
+	 *            The size of the board
+	 * @param inviter
+	 *            The player that sent the invitation
+	 */
+	private void parseInvitation(int boardSize, String inviter) {
+		invitation = new GameInvitation(boardSize, inviter);
+		setState(SessionState.invited);
+		setChanged();
+		notifyObservers(UpdateType.state);
+	}
+	
+	/**
+	 * Updates the ui to reflect the current players on the server
+	 * 
+	 * @param playerStr
+	 *            the raw player list string received from the server
+	 */
+	private void updatePlayerLobbyData(String playerStr) {
+		System.out.println(playerStr);
 		playerLobbyData = new HashMap<String, String>();
 		String[] playerStates = playerStr.split(" ");
-		for (String playerState:playerStates) {
+		for (String playerState : playerStates) {
 			String[] ps = playerState.split("-");
 			playerLobbyData.put(ps[0], ps[1]);
 		}
@@ -242,6 +321,7 @@ public class Session extends Observable {
 				.filter(p -> p.getName().equals(currentPlayer)).findAny();
 		if (!player.isPresent()) {
 			UnknownServerError("Received a move from a player that is not in the current game");
+			return;
 		}
 		
 		currentGame.commitMove(player.get(), y, x);
@@ -260,11 +340,12 @@ public class Session extends Observable {
 	 * @param playername1
 	 * @param playername2
 	 */
-	private void startGame(String playername1, String playername2) {
+	private void startGame(int boardSize, String[] playernames) {
 		ArrayList<Player> players = new ArrayList<>();
-		players.add(new PeerPlayer(playername1, 0));
-		players.add(new PeerPlayer(playername2, 1));
-		currentGame = new Game(players);
+		for (int i = 0; i < playernames.length; i++) {
+			players.add(new PeerPlayer(playernames[i], i));
+		}
+		currentGame = new Game(boardSize, players);
 		currentGame.startGame();
 		
 		setState(SessionState.ingame);
@@ -280,25 +361,32 @@ public class Session extends Observable {
 	private void parseError(String type, String message) {
 		// TODO put these strings in nice constants
 		switch (type) {
-			case "errorMessage":
+			case Protocol.E_MESSAGE:
 				ui.showModalMessage(message);
 				break;
-			case "nameTaken":
+			case Protocol.E_NAMETAKEN:
 				ui.showModalMessage("This name is already taken.");
 				break;
-			case "invalidCharacters":
+			case Protocol.E_INVALIDNAME:
 				ui.showModalMessage("The name you chose contains invalid characters.");
 				break;
-			case "couldNotStart":
+			case Protocol.E_COULDNOTSTART:
 				// TODO this error is specified in the protocol, does it
 				// actually
 				// exist?
 				ui.showModalMessage("Error: Could not start");
 				break;
-			case "invalidMove":
+			case Protocol.E_INVALIDMOVE:
 				ui.showModalMessage("Invalid move");
 				// TODO rewind the game state and find out how this error could
 				// happen
+				break;
+			case Protocol.E_INVITATIONDENIED:
+				ui.showModalMessage(message.split(" ")[0] + " rejected the party invitation.");
+				setState(SessionState.lobby);
+				break;
+			default:
+				ui.showModalMessage("unknown error from server \"" + type + ": " + message + "\"");
 				break;
 		}
 	}
@@ -311,7 +399,7 @@ public class Session extends Observable {
 	public Game getGame() {
 		return currentGame;
 	}
-	 	
+	
 	/**
 	 * Sets SessionState to authenticating
 	 */
@@ -320,7 +408,8 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Called when the server sends something unexpected
+	 * Called when the server sends something that is not according to the
+	 * protocol
 	 */
 	private void UnknownServerError(String reason) {
 		// TODO figure out what to actually do with this, do we

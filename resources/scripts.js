@@ -198,7 +198,9 @@ function LobbyUi() {
 	var el = this.el = eldiv("lobby", [
 		eldiv("queueoptions", [
 			els.queue = eldiv("queueopt"),
-			els.bot1 = eldiv("queueopt", ["Medium bot"]),
+			els.bot1 = eldiv("queueopt", ["Easy bot"]),
+			els.bot2 = eldiv("queueopt", ["Medium bot"]),
+			els.bot3 = eldiv("queueopt", ["Hard bot"]),
 			els.leave=eldiv("queueopt",["Leave game"])
 		]),
 		eldiv("playerlist")
@@ -211,7 +213,13 @@ function LobbyUi() {
 		sendMessage(queued ? "unqueue" : "queue");
 	}
 	els.bot1.onclick = function () {
-		sendMessage("bot simple");
+		sendMessage("bot easy");
+	}
+	els.bot2.onclick = function () {
+		sendMessage("bot medium");
+	}
+	els.bot3.onclick = function () {
+		sendMessage("bot hard");
 	}
 	els.leave.onclick = function () {
 		sendMessage("leaveGame");

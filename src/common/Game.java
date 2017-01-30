@@ -19,11 +19,8 @@ public class Game extends Observable {
 	 * @param players
 	 *            list of objects implementing Player interface
 	 */
-	public Game(ArrayList<? extends Player> players) {
-		if (players.size() != 2) {
-			throw new RuntimeException("nope, max 2 players for now");
-		}
-		board = new Board();
+	public Game(int boardSize, ArrayList<? extends Player> players) {
+		board = new Board(boardSize);
 		this.players = players;
 		reset();
 	}

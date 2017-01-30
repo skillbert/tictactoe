@@ -3,9 +3,8 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
-import ai.RandomAi;
-import ai.SimpleAI;
-import ai.ThreadedBruteforceAI;
+import ai.AIPlayer;
+import ai.AIType;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
@@ -111,12 +110,18 @@ public class ClientConnection {
 				case Protocol.LEAVEGAME:
 					leaveGame();
 					break;
+				case Protocol.INVITE:
+					Invite.sendInvite(this, command.nextInt(), command.remainingString());
+					break;
+				case Protocol.REPLY:
+					Invite.replyInvite(this, command.nextString().equals("yes"));
+					break;
 				default:
-					sendString(Protocol.UNKNOWNCOMMAND);
+					sendString(Protocol.ERROR + " " + Protocol.E_UNKNOWNCOMMAND);
 					break;
 			}
 		} catch (CommandFormatException ex) {
-			sendString(Protocol.ERROR_INVALIDCOMMAND);
+			sendString(Protocol.ERROR + " " + Protocol.E_INVALIDCOMMAND);
 		}
 	}
 	
@@ -132,24 +137,23 @@ public class ClientConnection {
 		Player bot;
 		switch (botname) {
 			case "easy":
-				bot = new RandomAi("Shitty_bot", Mark.YELLOW);
+				bot = new AIPlayer("Shitty_bot", Mark.YELLOW, AIType.random);
 				break;
 			case "medium":
-				bot = new SimpleAI("OK_bot", Mark.YELLOW);
+				bot = new AIPlayer("OK_bot", Mark.YELLOW, AIType.simple);
 				break;
 			case "hard":
-				bot = new ThreadedBruteforceAI("GGWP_bot", Mark.YELLOW);
-				// bot = new BruteForceAI("GGWP_bot", Mark.YELLOW);
+				bot = new AIPlayer("GGWP_bot", Mark.YELLOW, AIType.bruteforce);
 				break;
 			default:
-				sendString(
-						"error errorMessage Uknown bot type. Bot types are easy, medium and hard.");
+				sendString(Protocol.ERROR + " " + Protocol.E_MESSAGE
+						+ " Uknown bot type. Bot types are easy, medium and hard.");
 				return;
 		}
 		ArrayList<Player> players = new ArrayList<>();
 		players.add(new RemotePlayer(this, Mark.RED));
 		players.add(bot);
-		server.startGame(players);
+		server.startGame(4, players);
 	}
 	
 	
@@ -243,7 +247,7 @@ public class ClientConnection {
 		this.name = name;
 		setState(SessionState.lobby);
 		sendString(Protocol.LOBBY);
-
+		
 		server.broadcastPlayers();
 	}
 	

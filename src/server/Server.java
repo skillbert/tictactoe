@@ -19,17 +19,21 @@ import common.SessionState;
 import common.Util;
 
 public class Server implements Observer {
+	public static final int QUEUEGAMESIZE = 2;
+	public static final int QUEUEBOARDSIZE = 4;
+	
 	private AsynchronousServerSocketChannel ssocket;
 	private ArrayList<ClientConnection> clients;
 	private ArrayList<Game> activeGames;
+	private static Server instance;
 	
 	public static void main(String[] args) throws IOException {
 		System.out.println("Server started, please enter a port for the server to listen to:");
 		Scanner input = new Scanner(System.in);
-		while(true) {
+		while (true) {
 			int port = input.nextInt();
 			try {
-				new Server(port);
+				instance = new Server(port);
 				break;
 			} catch (IOException ex) {
 				System.out.println("Server error " + ex.getMessage());
@@ -99,13 +103,12 @@ public class Server implements Observer {
 			}
 		}
 		System.out.println("total queued: " + cons.size());
-		for (int offset = 0; offset + Game.NUMBER_PLAYERS - 1 < cons
-				.size(); offset += Game.NUMBER_PLAYERS) {
+		for (int offset = 0; offset + QUEUEGAMESIZE - 1 < cons.size(); offset += QUEUEGAMESIZE) {
 			ArrayList<Player> players = new ArrayList<>();
-			for (int i = 0; i < Game.NUMBER_PLAYERS; i++) {
+			for (int i = 0; i < QUEUEGAMESIZE; i++) {
 				players.add(new RemotePlayer(cons.get(offset + i), i));
 			}
-			startGame(players);
+			startGame(QUEUEBOARDSIZE, players);
 		}
 		broadcastPlayers();
 	}
@@ -116,9 +119,10 @@ public class Server implements Observer {
 	 * @param players
 	 *            players to add to the game
 	 */
-	public void startGame(ArrayList<Player> players) {
-		System.out.println("Starting game with " + players.get(0) + ", " + players.get(1));
-		Game game = new Game(players);
+	public void startGame(int boardSize, ArrayList<Player> players) {
+		System.out.println(
+				"Starting game with " + players.get(0).getName() + ", " + players.get(1).getName());
+		Game game = new Game(boardSize, players);
 		for (Player p : players) {
 			p.setGame(game);
 		}
@@ -181,6 +185,15 @@ public class Server implements Observer {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * messy fix for the design choice of not making server static
+	 * 
+	 * @return the main Server instance
+	 */
+	public static Server getInstance() {
+		return instance;
 	}
 }
 

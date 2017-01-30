@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
 
-import client.command.*;
+import client.command.CommandHandler;
+import client.command.Commands;
 import common.Game;
 import common.SessionState;
 import exceptions.ValidationError;
@@ -45,8 +46,8 @@ public class Tui implements Ui {
 				handler.handle(parts);
 			} catch (NumberFormatException | ValidationError e) {
 				showModalMessage(e.getMessage());
+
 			}
-			
 		} else {
 			out.println("Command not recognised, the commands are:");
 			printHelp();
@@ -73,6 +74,7 @@ public class Tui implements Ui {
 	}
 	
 	private void stateChanged() {
+		// TODO show invitations on statechange to invited
 		SessionState newstate = session.getState();
 		switch (newstate) {
 			case connecting:
@@ -104,7 +106,7 @@ public class Tui implements Ui {
 	}
 	
 	private void printHelp() {
-		for (String commandName:this.commands.keySet()){
+		for (String commandName : this.commands.keySet()) {
 			CommandHandler command = this.commands.get(commandName);
 			out.println(String.format("%s %s", commandName, command.usage));
 		}

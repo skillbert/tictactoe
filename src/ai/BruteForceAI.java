@@ -12,7 +12,7 @@ import common.Mark;
  * @author Wilbert
  *
  */
-public class BruteForceAI extends AIPlayer {
+public class BruteForceAI extends AIBase {
 	private static final int WINVALUE = 100000;
 	// board value at which we can assume that there is a win in the board
 	protected static final int WINLIMIT = WINVALUE / 2;
@@ -25,14 +25,9 @@ public class BruteForceAI extends AIPlayer {
 	protected int maxdepth;
 	protected int[][][] reverseWins;
 	
-	public BruteForceAI(String name, int mark) {
-		super(name, mark);
-		maxdepth = 6;
-	}
-	
-	@Override
-	public void setGame(Game game) {
-		super.setGame(game);
+	public BruteForceAI(Game game, int mark) {
+		super(game, mark);
+		this.maxdepth = 6;
 		this.winlength = game.getBoard().getWinLength();
 		this.boardSize = game.getBoard().getSize();
 		this.maxFieldIndex = game.getBoard().getFieldLength();
@@ -40,6 +35,7 @@ public class BruteForceAI extends AIPlayer {
 		this.nPlayers = game.getPlayers().size();
 		this.reverseWins = AIUtil.reverseWinconditions(wincons, game.getBoard());
 	}
+	
 	
 	@Override
 	public Point thinkMove(Board board) {

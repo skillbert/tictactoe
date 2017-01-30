@@ -13,12 +13,12 @@ import java.util.function.Consumer;
 public class MultiThreadTask {
 	public Queue<ThreadTask> tasks;
 	public ThreadTask endTask;
-	private int runningThreads;
+	private Queue<Thread> threads;
 	private boolean ended;
 	
 	public MultiThreadTask() {
+		threads = new LinkedList<>();
 		tasks = new LinkedList<>();
-		runningThreads = 0;
 		ended = false;
 	}
 	
@@ -55,8 +55,8 @@ public class MultiThreadTask {
 	 */
 	public void addThread() {
 		synchronized (this) {
-			runningThreads++;
 			Thread thread = new Thread(() -> threadRun());
+			threads.add(thread);
 			thread.start();
 		}
 	}
@@ -84,7 +84,7 @@ public class MultiThreadTask {
 		if (task != null) {
 			return task;
 		}
-		if (!ended && runningThreads == 1) {
+		if (!ended && threads.size() == 1) {
 			ended = true;
 			return endTask;
 		}
@@ -101,12 +101,25 @@ public class MultiThreadTask {
 			synchronized (this) {
 				task = getTask();
 				if (task == null) {
-					runningThreads--;
+					threads.remove(Thread.currentThread());
 					return;
 				}
 			}
 			
 			task.consumer.accept(task.arg);
+		}
+	}
+	
+	public void joinAll() throws InterruptedException {
+		while (true) {
+			Thread thread;
+			synchronized (this) {
+				thread = threads.peek();
+			}
+			if (thread == null) {
+				return;
+			}
+			thread.join();
 		}
 	}
 	

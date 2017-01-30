@@ -12,7 +12,7 @@ public class CommandParser {
 	private String[] parts;
 	private int index;
 	private String original;
-
+	
 	/**
 	 * Creates a new command from the given string
 	 * 
@@ -24,7 +24,7 @@ public class CommandParser {
 		original = command;
 		parts = command.split("\\s+");
 	}
-
+	
 	/**
 	 * gets the amount of arguments, that is the amount of arguments strings
 	 * excluding the command itself
@@ -34,7 +34,7 @@ public class CommandParser {
 	public int getArgCount() {
 		return parts.length - 1;
 	}
-
+	
 	/**
 	 * Gets the command.
 	 * 
@@ -43,7 +43,7 @@ public class CommandParser {
 	public String getCommand() {
 		return parts[0];
 	}
-
+	
 	/**
 	 * Gets the next argument and returns it as a string.
 	 * 
@@ -57,7 +57,7 @@ public class CommandParser {
 		}
 		return parts[index++];
 	}
-
+	
 	/**
 	 * Gets the next argument or returns the fallback value is there are no
 	 * arguments left
@@ -72,9 +72,10 @@ public class CommandParser {
 		}
 		return parts[index++];
 	}
-
+	
 	/**
-	 * Returns the remaining string from the last argument on
+	 * Returns the remaining string from the last argument on. This does not
+	 * increment the argument counter
 	 * 
 	 * @return
 	 */
@@ -84,8 +85,22 @@ public class CommandParser {
 		}
 		return original.split("\\s+", index + 1)[index];
 	}
-
-
+	
+	/**
+	 * Returns the remaining arguments as strings. This does not increment the
+	 * argument counter
+	 * 
+	 * @return
+	 */
+	public String[] remainingArguments() {
+		if (!hasNext()) {
+			return new String[0];
+		}
+		String[] args = new String[parts.length - index];
+		System.arraycopy(parts, index, args, 0, args.length);
+		return args;
+	}
+	
 	/**
 	 * Parses the next argument as an int and returns it
 	 * 
@@ -97,7 +112,7 @@ public class CommandParser {
 	public int nextInt() throws CommandFormatException {
 		return nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
-
+	
 	/**
 	 * Parses the next argument as an in in the given range
 	 * 
@@ -124,7 +139,7 @@ public class CommandParser {
 			throw new CommandFormatException();
 		}
 	}
-
+	
 	/**
 	 * Checks if there is a next argument
 	 * 
@@ -134,12 +149,12 @@ public class CommandParser {
 	public boolean hasNext() {
 		return index < parts.length;
 	}
-
+	
 	public static class CommandFormatException extends Exception {
 		public CommandFormatException(String message) {
 			super(message);
 		}
-
+		
 		public CommandFormatException() {
 			super();
 		}
