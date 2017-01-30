@@ -12,11 +12,12 @@ import java.util.stream.IntStream;
  * @version $0.1$
  */
 public class Board {
+	public static final int DEFAULTSIZE = 4;
 	public static final int INVALID_INDEX = -1;
-	public final int DIM = 4;
-	public final int winLength = DIM;
 	private ArrayList<int[]> wincons;
 	private int[] fields;
+	private int size;
+	private int winLength;
 	
 	
 	/**
@@ -38,8 +39,10 @@ public class Board {
 	 * board to get the index of a certain row and column combination you have
 	 * to add 16 for each layer on top of the base one.
 	 */
-	public Board() {
-		fields = new int[DIM * DIM * DIM];
+	public Board(int boardSize) {
+		this.size = boardSize;
+		this.winLength = boardSize;
+		fields = new int[size * size * size];
 		Arrays.fill(fields, Mark.EMPTY);
 		
 		initializeWincons();
@@ -52,8 +55,8 @@ public class Board {
 	 * @return deepcopy of the current Board object
 	 */
 	public Board deepCopy() {
-		Board board = new Board();
-		IntStream.range(0, DIM * DIM * DIM).forEach(i -> board.setField(i, this.getField(i)));
+		Board board = new Board(size);
+		IntStream.range(0, size * size * size).forEach(i -> board.setField(i, this.getField(i)));
 		return board;
 	}
 	
@@ -82,18 +85,19 @@ public class Board {
 		}
 		// calculate all win conditions
 		wincons = new ArrayList<>();
-		int wl = DIM;// win length
+		int wl = winLength;// win length
 		for (int[] step : stepdirs) {
-			for (int row = 0; row < DIM; row++) {
-				if (row + step[0] * (wl - 1) < 0 || row + step[0] * (wl - 1) >= DIM) {
+			for (int row = 0; row < size; row++) {
+				if (row + step[0] * (wl - 1) < 0 || row + step[0] * (wl - 1) >= size) {
 					continue;
 				}
-				for (int col = 0; col < DIM; col++) {
-					if (col + step[1] * (wl - 1) < 0 || col + step[1] * (wl - 1) >= DIM) {
+				for (int col = 0; col < size; col++) {
+					if (col + step[1] * (wl - 1) < 0 || col + step[1] * (wl - 1) >= size) {
 						continue;
 					}
-					for (int height = 0; height < DIM; height++) {
-						if (height + step[2] * (wl - 1) < 0 || height + step[2] * (wl - 1) >= DIM) {
+					for (int height = 0; height < size; height++) {
+						if (height + step[2] * (wl - 1) < 0
+								|| height + step[2] * (wl - 1) >= size) {
 							continue;
 						}
 						int[] wincon = new int[wl];
@@ -120,7 +124,7 @@ public class Board {
 	 * @return the selected field
 	 */
 	public int index(int row, int column, int height) {
-		return row + (column * DIM) + (height * DIM * DIM);
+		return row + (column * size) + (height * size * size);
 	}
 	
 	/**
@@ -130,7 +134,7 @@ public class Board {
 	 * @return
 	 */
 	public Point position(int index) {
-		return new Point((index / DIM) % DIM, index % DIM);
+		return new Point((index / size) % size, index % size);
 	}
 	
 	/**
@@ -142,7 +146,7 @@ public class Board {
 	 * @return the index of the field or INVALID_INDEX if the column is full
 	 */
 	public int indexFromColumn(int row, int column) {
-		for (int y = 0; y < DIM; y++) {
+		for (int y = 0; y < size; y++) {
 			int i = index(row, column, y);
 			if (fields[i] == Mark.EMPTY) {
 				return i;
@@ -158,11 +162,12 @@ public class Board {
 	 * @return true if the field exists
 	 */
 	public boolean isField(int index) {
-		return 0 <= index && index < DIM * DIM * DIM;
+		return 0 <= index && index < size * size * size;
 	}
 	
 	public boolean isField(int row, int column, int height) {
-		return row >= 0 && row < DIM && column >= 0 && column < DIM && height >= 0 && height < DIM;
+		return row >= 0 && row < size && column >= 0 && column < size && height >= 0
+				&& height < size;
 	}
 	
 	/**
@@ -194,14 +199,14 @@ public class Board {
 	 */
 	public boolean isAvailableField(int index) {
 		return getField(index) == Mark.EMPTY
-				&& (!isField(index - DIM * DIM) || getField(index - DIM * DIM) != Mark.EMPTY);
+				&& (!isField(index - size * size) || getField(index - size * size) != Mark.EMPTY);
 	}
 	
 	/**
 	 * @return true if the board is full
 	 */
 	public boolean isFull() {
-		return IntStream.range(0, DIM * DIM * DIM).allMatch(i -> getField(i) != Mark.EMPTY);
+		return IntStream.range(0, size * size * size).allMatch(i -> getField(i) != Mark.EMPTY);
 	}
 	
 	/**
@@ -236,7 +241,7 @@ public class Board {
 	}
 	
 	public int getSize() {
-		return DIM;
+		return size;
 	}
 	
 	public ArrayList<int[]> getWinConditions() {
@@ -244,7 +249,7 @@ public class Board {
 	}
 	
 	public int getWinLength() {
-		return DIM;
+		return winLength;
 	}
 	
 	public int[] getFieldsClone() {
@@ -253,24 +258,30 @@ public class Board {
 	
 	@Override
 	public String toString() {
-		String str = "      1      2      3      4";
-		for (int i = 0; i < DIM; i++) {
-			str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
-			str += String.valueOf(i + 1) + " ";
-			for (int j = 0; j < DIM; j++) {
+		String str = "     ";
+		// column numbers
+		for (int i = 0; i < size; i++) {
+			str += (i + 1) + Util.repeatString(" ", size + 2);
+		}
+		// draw the field
+		for (int i = 0; i < size; i++) {
+			str += "\n   " + Util.repeatString("+" + Util.repeatString("-", size + 2), size)
+					+ "+ \n";
+			str += " " + (i + 1) + " ";
+			for (int j = 0; j < size; j++) {
 				str += "| ";
-				for (int k = 0; k < DIM; k++) {
+				for (int k = 0; k < size; k++) {
 					str += Mark.getMarkString(getField(index(i, j, k)));
 				}
 				str += " ";
 			}
 			str += "| ";
 		}
-		str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n";
+		str += "\n   " + Util.repeatString("+" + Util.repeatString("-", size + 2), size) + "+ \n";
 		return str;
 	}
 	
 	public int getFieldLength() {
-		return DIM * DIM * DIM;
+		return size * size * size;
 	}
 }

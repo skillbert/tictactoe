@@ -111,12 +111,18 @@ public class ClientConnection {
 				case Protocol.LEAVEGAME:
 					leaveGame();
 					break;
+				case Protocol.INVITE:
+					Invite.sendInvite(this, command.nextInt(), command.remainingString());
+					break;
+				case Protocol.REPLY:
+					Invite.replyInvite(this, command.nextString().equals("yes"));
+					break;
 				default:
-					sendString(Protocol.UNKNOWNCOMMAND);
+					sendString(Protocol.ERROR + " " + Protocol.E_UNKNOWNCOMMAND);
 					break;
 			}
 		} catch (CommandFormatException ex) {
-			sendString(Protocol.ERROR_INVALIDCOMMAND);
+			sendString(Protocol.ERROR + " " + Protocol.E_INVALIDCOMMAND);
 		}
 	}
 	
@@ -149,7 +155,7 @@ public class ClientConnection {
 		ArrayList<Player> players = new ArrayList<>();
 		players.add(new RemotePlayer(this, Mark.RED));
 		players.add(bot);
-		server.startGame(players);
+		server.startGame(4, players);
 	}
 	
 	
@@ -242,7 +248,7 @@ public class ClientConnection {
 		this.name = name;
 		setState(SessionState.lobby);
 		sendString(Protocol.LOBBY);
-
+		
 		server.broadcastPlayers();
 	}
 	

@@ -16,25 +16,25 @@ import java.util.Queue;
  */
 public class AsyncSocket {
 	private static final int BUFFERSIZE = 2048;
-
+	
 	private AsynchronousSocketChannel channel;
 	private Queue<byte[]> writequeue = new LinkedList<>();
 	private boolean iswriting = false;
 	private boolean isreading = false;
 	private ByteBuffer readbuffer = ByteBuffer.allocate(BUFFERSIZE);
-
+	
 	private Callback0 closeCb;
 	private Callback0 connectedCb;
 	private Callback0 connectFailedCb;
 	private Callback1<byte[]> packetCb;
-
+	
 	/**
 	 * Creates an idle AsyncSocket object. Call the connect function after
 	 * setting the event functions to connect to a server
 	 */
 	public AsyncSocket() {
 	}
-
+	
 	/**
 	 * Creates an AsyncSocket object from an existing and connected
 	 * AsynchronousSocketChannel
@@ -45,7 +45,7 @@ public class AsyncSocket {
 	public AsyncSocket(AsynchronousSocketChannel channel) {
 		this.channel = channel;
 	}
-
+	
 	/**
 	 * Connect the socket to a server
 	 * 
@@ -59,13 +59,14 @@ public class AsyncSocket {
 		InetSocketAddress addr = new InetSocketAddress(host, port);
 		try {
 			channel = AsynchronousSocketChannel.open();
-			channel.connect(addr, null, new Util.SimpleHandler<>(v -> connected(), ex -> connectFailed(ex)));
+			channel.connect(addr, null,
+					new Util.SimpleHandler<>(v -> connected(), ex -> connectFailed(ex)));
 		} catch (UnresolvedAddressException | IOException ex) {
 			close();
 			connectFailed(ex);
 		}
 	}
-
+	
 	/**
 	 * Called when this socket successfully connected
 	 */
@@ -75,7 +76,7 @@ public class AsyncSocket {
 		}
 		startReading();
 	}
-
+	
 	/**
 	 * Called when this socket failed to connect
 	 * 
@@ -88,7 +89,7 @@ public class AsyncSocket {
 		}
 		close();
 	}
-
+	
 	/**
 	 * Send a series of bytes through the connection. The bytes are queued and
 	 * flushed automatically
@@ -100,7 +101,7 @@ public class AsyncSocket {
 		writequeue.add(bytes);
 		flush();
 	}
-
+	
 	/**
 	 * Attempts to flush any queued messages
 	 */
@@ -114,10 +115,10 @@ public class AsyncSocket {
 			channel.write(ByteBuffer.wrap(bytes), null, new Util.SimpleHandler<>(v -> {
 				iswriting = false;
 				flush();
-			}, ex -> ex.printStackTrace()));
+			}, ex -> connectionClosed()));
 		}
 	}
-
+	
 	/**
 	 * Sets the callback function for when the connection closes
 	 * 
@@ -127,7 +128,7 @@ public class AsyncSocket {
 	public void onClose(Callback0 cb) {
 		closeCb = cb;
 	}
-
+	
 	/**
 	 * Sets the callback function for when the socket receives a message
 	 * 
@@ -139,7 +140,7 @@ public class AsyncSocket {
 		packetCb = cb;
 		startReading();
 	}
-
+	
 	/**
 	 * Sets the callback function for when the socket is connected
 	 * 
@@ -150,7 +151,7 @@ public class AsyncSocket {
 	public void onConnect(Callback0 cb) {
 		connectedCb = cb;
 	}
-
+	
 	/**
 	 * Sets the callback function for if the socket failed to connect
 	 * 
@@ -159,7 +160,7 @@ public class AsyncSocket {
 	public void onConnectFail(Callback0 cb) {
 		connectFailedCb = cb;
 	}
-
+	
 	/**
 	 * closes the connection and the underlying socket
 	 */
@@ -172,18 +173,18 @@ public class AsyncSocket {
 			channel = null;
 		}
 	}
-
+	
 	/**
 	 * Starts the async reading action on the socket
 	 */
 	private synchronized void startReading() {
 		if (!isreading && isConnected()) {
 			isreading = true;
-			channel.read(readbuffer, null,
-					new Util.SimpleHandler<>(length -> bufferReceived(length), ex -> connectionClosed()));
+			channel.read(readbuffer, null, new Util.SimpleHandler<>(
+					length -> bufferReceived(length), ex -> connectionClosed()));
 		}
 	}
-
+	
 	/**
 	 * Called when an error occurs while reading from the socket
 	 */
@@ -193,7 +194,7 @@ public class AsyncSocket {
 		}
 		close();
 	}
-
+	
 	/**
 	 * Called when a new buffer is read from the socket
 	 */
@@ -212,7 +213,7 @@ public class AsyncSocket {
 		isreading = false;
 		startReading();
 	}
-
+	
 	/**
 	 * gets whether this socket is connected.
 	 */
@@ -228,7 +229,7 @@ public class AsyncSocket {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Gets the underlying AsynchronousSocketChannel object
 	 * 
@@ -237,15 +238,15 @@ public class AsyncSocket {
 	public AsynchronousSocketChannel getChannel() {
 		return channel;
 	}
-
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Generic callable interface without arguments or return value
 	 * 
@@ -255,7 +256,7 @@ public class AsyncSocket {
 	public static interface Callback0 {
 		public abstract void run();
 	}
-
+	
 	/**
 	 * Generic callable interface with one argument and without return value
 	 * 

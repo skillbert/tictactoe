@@ -1,5 +1,5 @@
 package common;
 
 public enum SessionState {
-	disconnected, connecting, authenticating, lobby, queued, ingame, lobbyupdate
+	disconnected, connecting, authenticating, lobby, queued, invited, ingame, lobbyupdate
 }

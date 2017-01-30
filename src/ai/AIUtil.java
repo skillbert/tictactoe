@@ -71,7 +71,7 @@ public class AIUtil {
 					wins.add(win);
 				}
 			}
-			result[index] = wins.toArray(new int[wins.size()][board.winLength]);
+			result[index] = wins.toArray(new int[wins.size()][board.getWinLength()]);
 		}
 		return result;
 	}

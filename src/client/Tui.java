@@ -1,12 +1,12 @@
 package client;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
 
-import client.command.*;
+import client.command.CommandHandler;
+import client.command.Commands;
 import common.Game;
 import common.SessionState;
 
@@ -40,7 +40,7 @@ public class Tui implements Ui {
 		if (commands.containsKey(parts[0])) {
 			CommandHandler handler = commands.get(parts[0]);
 			if (handler.validateArgs(parts) && handler.validateState()) {
-				if (handler.handle(parts)){
+				if (handler.handle(parts)) {
 					return;
 				}
 			}
@@ -69,6 +69,7 @@ public class Tui implements Ui {
 	}
 	
 	private void stateChanged() {
+		// TODO show invitations on statechange to invited
 		SessionState newstate = session.getState();
 		switch (newstate) {
 			case connecting:
@@ -102,7 +103,7 @@ public class Tui implements Ui {
 	}
 	
 	private void printHelp() {
-		for (CommandHandler command:this.commands.values()){
+		for (CommandHandler command : this.commands.values()) {
 			out.println(command.usage);
 		}
 	}
