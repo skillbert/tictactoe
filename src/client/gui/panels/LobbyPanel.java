@@ -42,6 +42,7 @@ public class LobbyPanel extends Panel {
 		
 	public void refresh() {
 		panel.removeAll();
+		panel.setLayout(layout);
 		Map<String, String> playerLobbyData = gui.getSession().getPlayerLobbyData();
 		playerTableModel = toTableModel(playerLobbyData);
 		JTable playerTable = new JTable(playerTableModel);

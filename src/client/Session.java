@@ -26,7 +26,6 @@ public class Session extends Observable {
 	private SessionState state;
 	private Game currentGame;
 	private Ui ui;
-	private String myName;
 	private SocketProtocol protocol;
 	private Map<String, String> playerLobbyData = new HashMap<String, String>();
 	private GameInvitation invitation;
@@ -37,7 +36,6 @@ public class Session extends Observable {
 	 */
 	public Session() {
 		setState(SessionState.disconnected);
-		myName = "";
 		ui = new Tui(this);
 		this.addObserver(ui);
 	}
@@ -114,7 +112,6 @@ public class Session extends Observable {
 	 *            chosen name
 	 */
 	public void login(String name) {
-		myName = name;
 		sendMessage(Protocol.LOGIN + Protocol.DELIMITER + name);
 	}
 	
@@ -228,7 +225,6 @@ public class Session extends Observable {
 		
 		for (String message : messages.split("\n")) {
 			CommandParser command = new CommandParser(message);
-			System.out.println("server msg > " + message + "<");
 			
 			try {
 				switch (command.getCommand()) {
@@ -253,7 +249,6 @@ public class Session extends Observable {
 						break;
 					
 					case Protocol.PLAYERS:
-						System.out.println("PLAYERS");
 						updatePlayerLobbyData(command.remainingString());
 						break;
 					
@@ -305,7 +300,6 @@ public class Session extends Observable {
 			String[] ps = playerState.split("-");
 			playerLobbyData.put(ps[0], ps[1]);
 		}
-		System.out.println("Notifiying lobby");
 		setChanged();
 		notifyObservers(Ui.UpdateType.lobby);
 	}
@@ -425,6 +419,11 @@ public class Session extends Observable {
 		// TODO figure out what to actually do with this, do we
 		// disconnect/throw/ingore?
 		System.out.println("Server protocol error: " + reason);
+	}
+	
+	public static void main(String[] args) {
+		Session session = new Session();
+		session.run();
 	}
 	
 }

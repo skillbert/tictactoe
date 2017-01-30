@@ -32,20 +32,16 @@ public abstract class CommandHandler {
     }
     
     public boolean validateArgs(String[] parts) {
-    		System.out.println("validate args");
     		if (parts.length < minArgs) {
         		System.out.println("invalid args");
 
     			setErrorMessage(String.format("Usage: %s %s", parts[0], usage));
     			return false;
     		}
-    		System.out.println("valid args");
-
     		return true;
     }
     
     public boolean validateState() {
-		System.out.println("validate state");
 
     		if (session.getState() != requiredState) {
     			System.out.println("invalid state" + session.getState() + requiredState);
@@ -53,8 +49,6 @@ public abstract class CommandHandler {
     			setErrorMessage(wrongStateMessage);
     			return false;
     		}
-    		System.out.println("valid state" + session.getState() + requiredState);
-
     		return true;
     }
     

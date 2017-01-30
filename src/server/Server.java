@@ -7,6 +7,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Scanner;
 
 import common.Game;
 import common.Game.EventType;
@@ -27,13 +28,20 @@ public class Server implements Observer {
 	private static Server instance;
 	
 	public static void main(String[] args) throws IOException {
-		try {
-			instance = new Server(Protocol.DEFAULTPORT);
-		} catch (IOException ex) {
-			System.out.println("Server error " + ex.getMessage());
+		System.out.println("Server started, please enter a port for the server to listen to:");
+		Scanner input = new Scanner(System.in);
+		while (true) {
+			int port = input.nextInt();
+			try {
+				instance = new Server(port);
+				break;
+			} catch (IOException ex) {
+				System.out.println("Server error " + ex.getMessage());
+			}
 		}
 		// keeps the server running until some user input
 		System.in.read();
+		input.close();
 	}
 	
 	/**
