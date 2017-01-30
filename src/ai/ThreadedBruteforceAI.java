@@ -3,6 +3,7 @@ package ai;
 import java.awt.Point;
 
 import common.Board;
+import common.Game;
 import common.MultiThreadTask;
 
 /**
@@ -18,22 +19,14 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 	private int[] beginMoves;
 	private int[] resultScores;
 	
-	public ThreadedBruteforceAI(String name, int mark) {
-		super(name, mark);
+	public ThreadedBruteforceAI(Game game, int mark) {
+		super(game, mark);
 		maxdepth = 7;
 		nThreads = 8;
 	}
 	
 	@Override
-	public synchronized void obtainTurn() {
-		Thread thread = new Thread(() -> thinkThread());
-		thread.start();
-	}
-	
-	/**
-	 * The code by the main thread that starts the other threads
-	 */
-	private void thinkThread() {
+	public Point thinkMove(Board board) {
 		beginFields = game.getBoard().getFieldsClone();
 		beginMoves = AIUtil.boardColumnIndexes(game.getBoard());
 		resultScores = new int[layerSize];
@@ -43,14 +36,21 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 			task.AddTask(i -> asyncRecursiveMove((int) i), index);
 		}
 		
-		task.onFinish(arg -> asyncDone(), null);
 		task.addThreads(nThreads);
+		try {
+			task.joinAll();
+		} catch (InterruptedException ex) {
+			// TODO do something meaningful here
+			ex.printStackTrace();
+			return new Point(0, 0);
+		}
+		return asyncDone();
 	}
 	
 	/**
 	 * To be run when all branches are complete
 	 */
-	private void asyncDone() {
+	private Point asyncDone() {
 		int best = 0;
 		int bestindex = -1;
 		for (int index = 0; index < layerSize; index++) {
@@ -62,8 +62,7 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 				bestindex = index;
 			}
 		}
-		Point point = game.getBoard().position(bestindex);
-		game.commitMove(this, point.y, point.x);
+		return game.getBoard().position(bestindex);
 	}
 	
 	/**

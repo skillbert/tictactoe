@@ -4,11 +4,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import common.Board;
+import common.Game;
 
-public class RandomAi extends AIPlayer {
+public class RandomAi extends AIBase {
 	
-	public RandomAi(String name, int mark) {
-		super(name, mark);
+	public RandomAi(Game game, int mark) {
+		super(game, mark);
 	}
 	
 	@Override

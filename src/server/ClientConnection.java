@@ -3,9 +3,8 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
-import ai.RandomAi;
-import ai.SimpleAI;
-import ai.ThreadedBruteforceAI;
+import ai.AIPlayer;
+import ai.AIType;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
@@ -138,18 +137,17 @@ public class ClientConnection {
 		Player bot;
 		switch (botname) {
 			case "easy":
-				bot = new RandomAi("Shitty_bot", Mark.YELLOW);
+				bot = new AIPlayer("Shitty_bot", Mark.YELLOW, AIType.random);
 				break;
 			case "medium":
-				bot = new SimpleAI("OK_bot", Mark.YELLOW);
+				bot = new AIPlayer("OK_bot", Mark.YELLOW, AIType.simple);
 				break;
 			case "hard":
-				bot = new ThreadedBruteforceAI("GGWP_bot", Mark.YELLOW);
-				// bot = new BruteForceAI("GGWP_bot", Mark.YELLOW);
+				bot = new AIPlayer("GGWP_bot", Mark.YELLOW, AIType.bruteforce);
 				break;
 			default:
-				sendString(
-						"error errorMessage Uknown bot type. Bot types are easy, medium and hard.");
+				sendString(Protocol.ERROR + " " + Protocol.E_MESSAGE
+						+ " Uknown bot type. Bot types are easy, medium and hard.");
 				return;
 		}
 		ArrayList<Player> players = new ArrayList<>();

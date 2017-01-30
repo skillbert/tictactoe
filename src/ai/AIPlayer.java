@@ -1,18 +1,16 @@
 package ai;
 
-import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Observable;
 
-import common.Board;
 import common.Game;
 import common.Player;
 
-public abstract class AIPlayer implements Player {
+public class AIPlayer implements Player {
 	protected Game game;
-	protected ArrayList<int[]> wincons;
-	protected int myMark;
+	private int myMark;
 	private String name;
+	private AIType aiType;
+	private AIBase ai;
 	
 	/**
 	 * Initializes an AIPlayer with name and mark
@@ -22,16 +20,28 @@ public abstract class AIPlayer implements Player {
 	 * @param mark
 	 *            AIPlayer mark to use
 	 */
-	public AIPlayer(String name, int mark) {
+	public AIPlayer(String name, int mark, AIType type) {
 		this.myMark = mark;
 		this.name = name;
+		this.aiType = type;
 	}
 	
 	@Override
 	public void setGame(Game game) {
+		switch (aiType) {
+			case random:
+				this.ai = new RandomAi(game, myMark);
+				break;
+			case simple:
+				this.ai = new SimpleAI(game, myMark);
+				break;
+			case bruteforce:
+				this.ai = new ThreadedBruteforceAI(game, myMark);
+				break;
+		}
+		
 		this.game = game;
 		game.addObserver(this);
-		wincons = (ArrayList<int[]>) game.getBoard().getWinConditions().clone();
 	}
 	
 	@Override
@@ -50,23 +60,10 @@ public abstract class AIPlayer implements Player {
 	
 	@Override
 	public void obtainTurn() {
-		Point move = thinkMove(game.getBoard());
-		game.commitMove(this, move.y, move.x);
-		int a = 0;
+		ai.startThinkMove(move -> game.commitMove(this, move.y, move.x));
 	}
 	
 	@Override
 	public void update(Observable o, Object arg) {
 	}
-	
-	/**
-	 * Performs the calculations to determine the move to make and returns the
-	 * move.
-	 * 
-	 * @param board
-	 *            Board object to use
-	 * @return the move to make as a Point object or null if the thinking will
-	 *         be done async
-	 */
-	public abstract Point thinkMove(Board board);
 }

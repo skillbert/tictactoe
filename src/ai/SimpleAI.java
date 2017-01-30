@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import common.Board;
+import common.Game;
 import common.Mark;
 
 /**
@@ -13,12 +14,12 @@ import common.Mark;
  * @author Wilbert
  *
  */
-public class SimpleAI extends AIPlayer {
+public class SimpleAI extends AIBase {
 	private static final int INSTANTWIN = 1000000;
 	private static final int LOSSAFTER = 1000;
 	
-	public SimpleAI(String name, int mark) {
-		super(name, mark);
+	public SimpleAI(Game game, int mark) {
+		super(game, mark);
 	}
 	
 	@Override
@@ -61,12 +62,12 @@ public class SimpleAI extends AIPlayer {
 			int attscore = 1;
 			for (int mark = 0; mark < markcount.length; mark++) {
 				if (mark == myMark) {
-					if (markcount[mark] == board.winLength - 1) {
+					if (markcount[mark] == board.getWinLength() - 1) {
 						attscore += INSTANTWIN;
 					}
 					attscore += markcount[mark] * markcount[mark];
 				} else {
-					if (markcount[mark] == board.winLength - 1) {
+					if (markcount[mark] == board.getWinLength() - 1) {
 						defscore += LOSSAFTER;
 					}
 					defscore += markcount[mark] * markcount[mark];
