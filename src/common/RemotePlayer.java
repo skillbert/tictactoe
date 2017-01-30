@@ -49,6 +49,7 @@ public class RemotePlayer implements Player {
 			if (game.getState() != GameState.onGoing) {
 				connection.setState(SessionState.lobby);
 				connection.setPlayer(null);
+				connection.getServer().broadcastPlayers();
 			}
 			break;
 

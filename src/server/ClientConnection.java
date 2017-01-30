@@ -163,6 +163,7 @@ public class ClientConnection {
 			return;
 		}
 		setState(SessionState.lobby);
+		server.broadcastPlayers();
 		setPlayer(null);
 		// TODO tell our opponent about it, can't with protocol
 	}

@@ -31,11 +31,16 @@ public class LobbyPanel extends Panel {
 			cancelQueue();
 		});
 		
+		Map<String, String> playerLobbyData = gui.getSession().getPlayerLobbyData();
+		playerTableModel = toTableModel(playerLobbyData);
+		JTable playerTable = new JTable(playerTableModel);
+		panel.add(new JScrollPane(playerTable), "span 2");
+		panel.add(queueButton);
+		panel.add(cancelQueueButton);
 
 	}
-	
-	@Override
-	public JPanel getPanel() {
+		
+	public void refresh() {
 		panel.removeAll();
 		Map<String, String> playerLobbyData = gui.getSession().getPlayerLobbyData();
 		playerTableModel = toTableModel(playerLobbyData);
@@ -43,7 +48,8 @@ public class LobbyPanel extends Panel {
 		panel.add(new JScrollPane(playerTable), "span 2");
 		panel.add(queueButton);
 		panel.add(cancelQueueButton);
-		return this.panel;	
+		panel.revalidate();
+		panel.repaint();
 	}
 	
 	public static DefaultTableModel toTableModel(Map<?,?> map) {

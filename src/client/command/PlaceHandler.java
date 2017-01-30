@@ -19,7 +19,7 @@ public class PlaceHandler extends CommandHandler {
 			this.setErrorMessage("invalid number format");
 			return false;
 		}
-		if (x <= 4 && y <= 4) { // 4 because user input 1-4
+		if (x > 0 && x <= 4 && y > 0 && y <= 4) { // 4 because user input 1-4
 			getSession().commitMove(x - 1, y - 1); // -1 because 0 indexed vs. 1
 												// indexed as presented to the
 												// user.

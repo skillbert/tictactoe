@@ -16,9 +16,10 @@ import client.command.CommandHandler;
 import client.command.Commands;
 
 import client.gui.panels.ConnectPanel;
+import client.gui.panels.GamePanel;
 import client.gui.panels.LobbyPanel;
 import client.gui.panels.LoginPanel;
-
+import common.Game;
 import common.SessionState;
 import net.miginfocom.swing.MigLayout;
 import client.gui.panels.Panel;
@@ -27,7 +28,8 @@ public class Gui extends JFrame implements Ui {
 	private JFrame mainFrame;
 	private Panel connectPanel;
 	private Panel loginPanel;
-	private Panel lobbyPanel;
+	private LobbyPanel lobbyPanel;
+	private GamePanel gamePanel;
 	
 	private JLabel errorField;
 	private JLabel statusField;
@@ -58,7 +60,7 @@ public class Gui extends JFrame implements Ui {
 	    connectPanel = new ConnectPanel(this);
 		loginPanel = new LoginPanel(this);
 		lobbyPanel = new LobbyPanel(this);
-		
+		gamePanel = new GamePanel(this);
 
 		showPanel(connectPanel);
 
@@ -80,13 +82,15 @@ public class Gui extends JFrame implements Ui {
 		switch ((Ui.UpdateType) arg) {
 			case state:
 				stateChanged();
+				if (session.getState() == SessionState.lobby || session.getState() == SessionState.queued) {
+					lobbyPanel.refresh();
+				}
 				break;
 			case gamemove:
 				gameChanged();
 				break;
 			case lobby:
-				System.out.println("lobbypanel");
-				showPanel(lobbyPanel);
+				lobbyPanel.refresh();
 				break;
 		}
 	}
@@ -95,6 +99,9 @@ public class Gui extends JFrame implements Ui {
 		mainFrame.getContentPane().removeAll();
 		mainFrame.getContentPane().add(panel.getPanel());
 		showFooter();
+		mainFrame.setVisible(true);  
+		mainFrame.revalidate();
+		mainFrame.repaint();
 	}
 	
 	
@@ -102,7 +109,6 @@ public class Gui extends JFrame implements Ui {
 		mainFrame.add(errorField, "skip");
 		mainFrame.add(statusField, "skip");
 		mainFrame.add(modalField, "skip");
-		mainFrame.setVisible(true);  
 	}
 	
 	/**
@@ -135,6 +141,7 @@ public class Gui extends JFrame implements Ui {
 				statusField.setText("Disconnected from server");
 				break;
 			case ingame:
+				showPanel(gamePanel);
 				statusField.setText("entered game");
 				gameChanged();
 				break;
@@ -142,7 +149,11 @@ public class Gui extends JFrame implements Ui {
 	}
 	
 	private void gameChanged() {
-		
+		Game game = session.getGame();
+		gamePanel.refresh();
+		mainFrame.revalidate();
+		mainFrame.repaint();
+		System.out.println(game.toString());
 	}
 	
 	public void handleCommand(CommandHandler handler, String[] parts) {
