@@ -25,4 +25,6 @@ public class Protocol {
 	public static final String ERROR_INVALIDCOMMAND = "error invalidCommand";
 	public static final String UNKNOWNCOMMAND = "error unknownCommand";
 	public static final int DIM = 4;
+	public static final String CONNECT = "connect";
+
 }

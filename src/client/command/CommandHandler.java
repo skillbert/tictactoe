@@ -1,7 +1,12 @@
 package client.command;
 
+import javax.xml.bind.ValidationException;
+
 import client.Session;
 import common.SessionState;
+import exceptions.MissingArgsException;
+import exceptions.ValidationError;
+import exceptions.WrongStateException;
 
 public abstract class CommandHandler {
 	private final Session session;
@@ -31,26 +36,18 @@ public abstract class CommandHandler {
     		this.errorMessage = errorMessage;
     }
     
-    public boolean validateArgs(String[] parts) {
+    public void validateArgs(String[] parts) throws MissingArgsException {
     		if (parts.length < minArgs) {
-        		System.out.println("invalid args");
-
-    			setErrorMessage(String.format("Usage: %s %s", parts[0], usage));
-    			return false;
+    			throw new MissingArgsException(minArgs, parts.length);
     		}
-    		return true;
     }
     
-    public boolean validateState() {
+    public void validateState() throws WrongStateException {
 
     		if (session.getState() != requiredState) {
-    			System.out.println("invalid state" + session.getState() + requiredState);
-
-    			setErrorMessage(wrongStateMessage);
-    			return false;
+    			throw new WrongStateException(session.getState(), requiredState);
     		}
-    		return true;
     }
     
-	public abstract boolean handle(String[] parts);
+	public abstract void handle(String[] parts) throws ValidationError, NumberFormatException;
 }

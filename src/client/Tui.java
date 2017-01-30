@@ -8,6 +8,7 @@ import java.util.Scanner;
 import client.command.*;
 import common.Game;
 import common.SessionState;
+import exceptions.ValidationError;
 
 public class Tui implements Ui {
 	private PrintStream out;
@@ -38,12 +39,14 @@ public class Tui implements Ui {
 		String[] parts = input.split(" ");
 		if (commands.containsKey(parts[0])) {
 			CommandHandler handler = commands.get(parts[0]);
-			if (handler.validateArgs(parts) && handler.validateState()) {
-				if (handler.handle(parts)){
-					return;
-				}
+			try {
+				handler.validateArgs(parts);
+				handler.validateState();
+				handler.handle(parts);
+			} catch (NumberFormatException | ValidationError e) {
+				showModalMessage(e.getMessage());
 			}
-			out.println(handler.getErrorMessage());
+			
 		} else {
 			out.println("Command not recognised, the commands are:");
 			printHelp();

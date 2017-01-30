@@ -3,13 +3,13 @@ package common;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 /**
  * Board for the Connect3D game. Module 2 Programming project.
  * 
  * @author Maurits van der Vijgh
- * @version $0.1$
  */
 public class Board {
 	public static final int INVALID_INDEX = -1;
@@ -21,8 +21,6 @@ public class Board {
 	
 	/**
 	 * fields represent the board. column/row to index.
-	 * 
-	 * Sorry the code formatter really doesn't like this table
 	 * 
 	 * ____c1__c2__c3__c4
 	 * 
@@ -38,10 +36,12 @@ public class Board {
 	 * board to get the index of a certain row and column combination you have
 	 * to add 16 for each layer on top of the base one.
 	 */
+	
+	//@ ensures (\forall int i; 0 <= i & i < getFields().length; getFields()[i] == Mark.EMPTY);
+	//@ ensures getWinConditions().size() > 0;
 	public Board() {
 		fields = new int[DIM * DIM * DIM];
 		Arrays.fill(fields, Mark.EMPTY);
-		
 		initializeWincons();
 	}
 	
@@ -51,7 +51,8 @@ public class Board {
 	 * 
 	 * @return deepcopy of the current Board object
 	 */
-	public Board deepCopy() {
+	//@ ensures  (\forall int j; 0<=j & j < getFields().length; getFields()[j] == \result.getField(j));
+	/*@ pure */ public Board deepCopy() {
 		Board board = new Board();
 		IntStream.range(0, DIM * DIM * DIM).forEach(i -> board.setField(i, this.getField(i)));
 		return board;
@@ -60,9 +61,11 @@ public class Board {
 	/**
 	 * Calculates all win conditions for this board.
 	 */
+	//@ ensures (\forall int i; 0 <= i & i < getWinConditions().size(); getWinConditions().get(i).length == winLength);
+	//@ ensures getWinConditions().size() > 0;
 	public void initializeWincons() {
 		// loop all possible directions
-		ArrayList<int[]> stepdirs = new ArrayList<>();
+		ArrayList<int[]> stepdirs = new ArrayList<int[]>();
 		for (int rowstep = -1; rowstep <= 1; rowstep++) {
 			for (int colstep = -1; colstep <= 1; colstep++) {
 				for (int heightstep = -1; heightstep <= 1; heightstep++) {
@@ -81,7 +84,7 @@ public class Board {
 			}
 		}
 		// calculate all win conditions
-		wincons = new ArrayList<>();
+		wincons = new ArrayList<int[]>();
 		int wl = DIM;// win length
 		for (int[] step : stepdirs) {
 			for (int row = 0; row < DIM; row++) {
@@ -119,7 +122,9 @@ public class Board {
 	 * @param height
 	 * @return the selected field
 	 */
-	public int index(int row, int column, int height) {
+	//@ requires height < DIM & height > 0 & column < DIM & column > DIM & row < DIM & row > DIM;
+	//@ ensures \result < getFieldLength();
+	/*@ pure */ public int index(int row, int column, int height) {
 		return row + (column * DIM) + (height * DIM * DIM);
 	}
 	
@@ -129,7 +134,9 @@ public class Board {
 	 * @param index
 	 * @return
 	 */
-	public Point position(int index) {
+	//@ requires index < getFieldLength();
+	//@ ensures \result.x < DIM & \result.y < DIM & \result.x > 0 & \result.y > 0;
+	/*@ pure */ public Point position(int index) {
 		return new Point((index / DIM) % DIM, index % DIM);
 	}
 	
@@ -141,7 +148,9 @@ public class Board {
 	 * @param column
 	 * @return the index of the field or INVALID_INDEX if the column is full
 	 */
-	public int indexFromColumn(int row, int column) {
+	//@ requires row < DIM & column < DIM & row > DIM & row > DIM;
+	//@ ensures \result == INVALID_INDEX || getField(\result) == Mark.EMPTY;
+	/*@ pure */ public int indexFromColumn(int row, int column) {
 		for (int y = 0; y < DIM; y++) {
 			int i = index(row, column, y);
 			if (fields[i] == Mark.EMPTY) {
@@ -157,11 +166,19 @@ public class Board {
 	 * @param index
 	 * @return true if the field exists
 	 */
-	public boolean isField(int index) {
-		return 0 <= index && index < DIM * DIM * DIM;
+	//@ ensures \result & index < getFieldLength() & index >= 0 || !\result & index > getFieldLength() & index < 0;
+	/*@ pure */ public boolean isField(int index) {
+		return 0 <= index && index < getFieldLength();
 	}
 	
-	public boolean isField(int row, int column, int height) {
+	/**
+	 * Returns true if the selected field is within range.
+	 * 
+	 * @param index
+	 * @return true if the field exists
+	 */
+	//@ ensures \result == isField(index(row, column, height));
+	/*@ pure */ public boolean isField(int row, int column, int height) {
 		return row >= 0 && row < DIM && column >= 0 && column < DIM && height >= 0 && height < DIM;
 	}
 	
@@ -171,7 +188,9 @@ public class Board {
 	 * @param index
 	 * @return Mark
 	 */
-	public int getField(int index) {
+	//@ requires isField(index);
+	//@ ensures \result == getFields()[index];
+	/*@ pure */ public int getField(int index) {
 		return fields[index];
 	}
 	
@@ -181,6 +200,8 @@ public class Board {
 	 * @param index
 	 * @param m
 	 */
+	//@ requires isField(index) & m >= Mark.EMPTY & m <= Mark.YELLOW;
+	//@ ensures getField(index) == m;
 	public void setField(int index, int m) {
 		fields[index] = m;
 	}
@@ -192,7 +213,8 @@ public class Board {
 	 * @param index
 	 * @return true if the field is available
 	 */
-	public boolean isAvailableField(int index) {
+	/*@ ensures ((\result & isField(getField(index)) & getField(index) == Mark.EMPTY || getField(index - DIM * DIM) != Mark.EMPTY) || (!\result & !(isField(getField(index)) & getField(index) == Mark.EMPTY)));
+	pure */ public boolean isAvailableField(int index) {
 		return getField(index) == Mark.EMPTY
 				&& (!isField(index - DIM * DIM) || getField(index - DIM * DIM) != Mark.EMPTY);
 	}
@@ -200,7 +222,8 @@ public class Board {
 	/**
 	 * @return true if the board is full
 	 */
-	public boolean isFull() {
+	/*@ ensures \result == (\forall int i; i > 0 & i <= getSize(); getField(i) != Mark.EMPTY); 
+	pure */ public boolean isFull() {
 		return IntStream.range(0, DIM * DIM * DIM).allMatch(i -> getField(i) != Mark.EMPTY);
 	}
 	
@@ -209,7 +232,8 @@ public class Board {
 	 * 
 	 * @return the winning mark or Mark.Empty if there is no winner
 	 */
-	public int findWinner() {
+	/*@ ensures (\forall int i; i > 0 & i <= getWinConditions().size(); IntStream.of(getWinConditions().get(i)).anyMatch(j -> j == Mark.EMPTY)) & \result != Mark.EMPTY;
+	pure */ public int findWinner() {
 		for (int[] wincon : wincons) {
 			int mark = fields[wincon[0]];
 			if (mark == Mark.EMPTY) {
@@ -231,28 +255,54 @@ public class Board {
 	/**
 	 * Resets the board
 	 */
+	//@ ensures (\forall int i; i > 0 & i < getSize(); getField(i) == Mark.EMPTY);
 	public void reset() {
 		Arrays.fill(fields, Mark.EMPTY);
 	}
 	
-	public int getSize() {
+	/**
+	 * getter size of the board
+	 * @return the size of the board
+	 */
+	/*@ pure */ public int getSize() {
 		return DIM;
 	}
 	
-	public ArrayList<int[]> getWinConditions() {
+	/**
+	 * getter win conditions
+	 * @return a list of arrays with all possible winning combinations
+	 */
+	/*@ pure */ public ArrayList<int[]> getWinConditions() {
 		return wincons;
 	}
 	
-	public int getWinLength() {
+	/**
+	 * getter length needed to win.
+	 * @return length needed to win
+	 */
+	/*@ pure */ public int getWinLength() {
 		return DIM;
 	}
 	
-	public int[] getFieldsClone() {
+	/**
+	 * getter array with a copy of all fields
+	 * @return an copy of the fields array
+	 */
+	//@ ensures (\forall int i; i > 0 & i < getSize(); getField(i) == \result[i]);
+	/*@ pure */ public int[] getFieldsClone() {
 		return fields.clone();
 	}
 	
+	/*@ pure */ public int[] getFields() {
+		return fields;
+	}
+	
 	@Override
-	public String toString() {
+	/**
+	 * returns a string representation of the board in a format that can directly be used for a TUI.
+	 */
+	// ensures looks like a board
+	/*@ pure */ public String toString() {
 		String str = "      1      2      3      4";
 		for (int i = 0; i < DIM; i++) {
 			str += "\n   " + new String(new char[DIM]).replace("\0", "+------") + "+ \n ";
@@ -270,7 +320,11 @@ public class Board {
 		return str;
 	}
 	
-	public int getFieldLength() {
+	/**
+	 * Getter field length
+	 * @return the total number of fields
+	 */
+	/*@ pure */ public int getFieldLength() {
 		return DIM * DIM * DIM;
 	}
 }

@@ -11,9 +11,7 @@ public class CancelQueueHandler extends CommandHandler {
 	}
 	
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) {
 		getSession().cancelQueueGame();
-		System.out.println("happening");
-		return true;
 	}
 }

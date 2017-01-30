@@ -10,9 +10,8 @@ public class QueueHandler extends CommandHandler {
 		super(session, minArgs, usage, requiredState, wrongStateMessage);
 	}
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) {
 		getSession().queueGame();
-		return true;
 	}
 	
 }

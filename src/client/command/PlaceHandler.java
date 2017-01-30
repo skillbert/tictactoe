@@ -3,6 +3,8 @@ package client.command;
 import client.Session;
 import common.Protocol;
 import common.SessionState;
+import exceptions.InvalidPlaceInput;
+import exceptions.ValidationError;
 
 public class PlaceHandler extends CommandHandler {
 	public PlaceHandler(Session session, int minArgs, String usage, SessionState requiredState, String wrongStateMessage){
@@ -10,24 +12,17 @@ public class PlaceHandler extends CommandHandler {
 	}
 	
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) throws ValidationError, NumberFormatException {
 		int x, y;
-		try {
-			x = Integer.parseUnsignedInt(parts[1]);
-			y = Integer.parseUnsignedInt(parts[2]);
-		} catch (NumberFormatException ex) {
-			this.setErrorMessage("invalid number format");
-			return false;
-		}
+		x = Integer.parseUnsignedInt(parts[1]);
+		y = Integer.parseUnsignedInt(parts[2]);
+
 		if (x > 0 && x <= 4 && y > 0 && y <= 4) { // 4 because user input 1-4
 			getSession().commitMove(x - 1, y - 1); // -1 because 0 indexed vs. 1
 												// indexed as presented to the
 												// user.
 		} else {
-			this.setErrorMessage("Invalid input, make sure 1 <= x <= 4 and 1 <= y <= 4");
-			return false;
+			throw new InvalidPlaceInput(x, y);
 		}
-		getSession().commitMove(x, y);
-		return true;
 	}
 }

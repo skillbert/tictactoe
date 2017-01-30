@@ -23,6 +23,7 @@ import client.gui.panels.GamePanel;
 import client.gui.panels.LobbyPanel;
 import client.gui.panels.LoginPanel;
 import common.SessionState;
+import exceptions.ValidationError;
 import net.miginfocom.swing.MigLayout;
 import client.gui.panels.Panel;
 
@@ -163,18 +164,12 @@ public class Gui extends JFrame implements Ui {
 	
 	
 	public void handleCommand(CommandHandler handler, String[] parts) {
-		System.out.println(Arrays.toString(parts ) + "Exec");
-		System.out.println(handler.toString());
-		if (handler.validateState() && handler.validateArgs(parts)) {
-			System.out.println(Arrays.toString(parts) + "Validated");
-
-			if (handler.handle(parts)) {
-				System.out.println(Arrays.toString(parts) + "Executed");
-
-				return;
-			}
+		try {
+			handler.validateState();
+			handler.validateArgs(parts);
+			handler.handle(parts);
+		} catch (ValidationError | NumberFormatException e) {
+			showModalMessage(e.getMessage());
 		}
-		String error = handler.getErrorMessage();
-		showModalMessage(error);
 	}
 }

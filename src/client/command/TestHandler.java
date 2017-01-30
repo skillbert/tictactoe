@@ -11,9 +11,8 @@ public class TestHandler extends CommandHandler {
 	}
 	
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) {
 		getSession().connect("localhost", Protocol.DEFAULTPORT);
-		return true;
 	}
 	
 }

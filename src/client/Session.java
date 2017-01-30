@@ -33,7 +33,7 @@ public class Session extends Observable {
 	 */
 	public Session() {
 		setState(SessionState.disconnected);
-		ui = new Tui(this);
+		ui = new Gui(this);
 		this.addObserver(ui);
 	}
 	
@@ -203,13 +203,9 @@ public class Session extends Observable {
 						parsePlaced(command.nextString(), command.nextInt(), command.nextInt(),
 								command.nextString(), command.nextString());
 						break;
-					
-					default:
-						// TODO ignore this or do something else?
-						System.out.println("unknown command from server");
 				}
 			} catch (CommandFormatException ex) {
-				System.out.println("Invalid command received from server");
+				ui.showModalMessage(ex.getMessage());
 			}
 		}
 	}

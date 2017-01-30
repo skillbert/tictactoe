@@ -10,9 +10,8 @@ public class LoginHandler extends CommandHandler {
 	}
 	
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) {
 		getSession().login(parts[1]);
-		return true;
 	}
 	
 }
