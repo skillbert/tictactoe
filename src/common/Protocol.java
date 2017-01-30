@@ -41,4 +41,5 @@ public class Protocol {
 	public static final String LEAVEGAME = "leaveGame";
 	public static final String E_INVALIDCOMMAND = "invalidCommand";
 	public static final String E_UNKNOWNCOMMAND = "unknownCommand";
+	public static final int DIM = 4;
 }
