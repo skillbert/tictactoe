@@ -1,7 +1,6 @@
 package client;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Scanner;
@@ -60,6 +59,8 @@ public class Tui implements Ui {
 			case gamemove:
 				gameChanged();
 				break;
+			case lobby:
+				break;
 		}
 	}
 	
@@ -91,8 +92,6 @@ public class Tui implements Ui {
 				out.println("entered game");
 				gameChanged();
 				break;
-			case lobbyupdate:
-				session.setState(SessionState.lobby);
 		}
 	}
 	
@@ -102,8 +101,9 @@ public class Tui implements Ui {
 	}
 	
 	private void printHelp() {
-		for (CommandHandler command:this.commands.values()){
-			out.println(command.usage);
+		for (String commandName:this.commands.keySet()){
+			CommandHandler command = this.commands.get(commandName);
+			out.println(String.format("%s %s", commandName, command.usage));
 		}
 	}
 }

@@ -6,7 +6,7 @@ import client.gui.Gui;
 import net.miginfocom.swing.MigLayout;
 
 public abstract class Panel extends JPanel {
-	private MigLayout layout = new MigLayout("wrap 2");
+	protected MigLayout layout = new MigLayout("wrap 2");
 	protected Gui gui;
 	protected JPanel panel = new JPanel(layout);
 
