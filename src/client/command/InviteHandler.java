@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import client.Session;
 import common.SessionState;
+import exceptions.InvalidBoardSize;
 
 public class InviteHandler extends CommandHandler {
 	public InviteHandler(Session session, int minArgs, String usage, SessionState requiredState,
@@ -12,14 +13,13 @@ public class InviteHandler extends CommandHandler {
 	}
 	
 	@Override
-	public boolean handle(String[] parts) {
+	public void handle(String[] parts) throws InvalidBoardSize {
 		int index = 1;
 		int size;
 		try {
 			size = Integer.parseInt(parts[index++]);
 		} catch (NumberFormatException ex) {
-			this.setErrorMessage("invalid board size format");
-			return false;
+			throw new InvalidBoardSize();
 		}
 		
 		ArrayList<String> players = new ArrayList<>();
@@ -28,7 +28,6 @@ public class InviteHandler extends CommandHandler {
 		}
 		
 		this.getSession().invite(size, players);
-		return true;
 	}
 	
 }
