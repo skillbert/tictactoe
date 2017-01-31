@@ -131,7 +131,7 @@ public class Game extends Observable {
 	 *            player object to check
 	 * @return if it's the turn of player
 	 */
-	private boolean hasTurn(Player player) {
+	public boolean hasTurn(Player player) {
 		return getTurn() == player;
 	}
 	

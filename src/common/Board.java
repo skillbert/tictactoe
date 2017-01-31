@@ -117,9 +117,6 @@ public class Board {
 				}
 			}
 		}
-		
-		// wincons.stream().forEach(w -> System.out.println(w[0] + " " + w[1] +
-		// " " + w[2] + " " + w[3]));
 	}
 	
 	/**
