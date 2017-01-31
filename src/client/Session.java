@@ -8,6 +8,7 @@ import java.util.Observable;
 import java.util.Optional;
 
 import client.Ui.UpdateType;
+import client.gui.Gui;
 import common.AsyncSocket;
 import common.Board;
 import common.CommandParser;
@@ -34,6 +35,7 @@ public class Session extends Observable {
 	 * Initializes a new Session by creating a new Peerplayer (network player)
 	 * and initializing a UI.
 	 */
+	//@ ensures getState() == SessionState.disconnected;
 	public Session() {
 		setState(SessionState.disconnected);
 		ui = new Gui(this);
@@ -43,7 +45,7 @@ public class Session extends Observable {
 	/**
 	 * calls run() on the ui so starts interaction.
 	 */
-	public void run() {
+	/*@ pure */ public void run() {
 		ui.run();
 	}
 	
@@ -52,7 +54,7 @@ public class Session extends Observable {
 	 * 
 	 * @return this.state
 	 */
-	public SessionState getState() {
+	/*@ pure */ public SessionState getState() {
 		return state;
 	}
 	
@@ -62,6 +64,7 @@ public class Session extends Observable {
 	 * @param state
 	 *            state to set.
 	 */
+	//@ ensures getState() == state;
 	public void setState(SessionState state) {
 		this.state = state;
 		setChanged();
@@ -76,6 +79,7 @@ public class Session extends Observable {
 	 * @param port
 	 *            Port to connect to
 	 */
+	//@ ensures getState() == SessionState.authenticating;
 	public void connect(String host, int port) {
 		setState(SessionState.connecting);
 		sock = new AsyncSocket();
@@ -101,7 +105,7 @@ public class Session extends Observable {
 	 * @param y
 	 *            chosen y / row
 	 */
-	public void commitMove(int x, int y) {
+	/* @ pure */  public void commitMove(int x, int y) {
 		sendMessage(Protocol.PLACE + Protocol.DELIMITER + x + Protocol.DELIMITER + y);
 	}
 	
@@ -111,7 +115,7 @@ public class Session extends Observable {
 	 * @param name
 	 *            chosen name
 	 */
-	public void login(String name) {
+	/* @ pure */  public void login(String name) {
 		sendMessage(Protocol.LOGIN + Protocol.DELIMITER + name);
 	}
 	
@@ -124,6 +128,8 @@ public class Session extends Observable {
 	 * @param players
 	 *            a list of player names to invite
 	 */
+	//@requires getState() == SessionState.lobby;
+	//@ requires players.size() > 0;
 	public void invite(int boardSize, ArrayList<String> players) {
 		if (state != SessionState.lobby) {
 			ui.showModalMessage("You need to be in the lobby to invite players");
@@ -149,6 +155,7 @@ public class Session extends Observable {
 	 * @param accept
 	 *            true is accepted, false if the invite is rejected
 	 */
+	//@ requires getState() == SessionState.invited;
 	public void replyInvite(boolean accept) {
 		if (state != SessionState.invited) {
 			ui.showModalMessage("You don't have any invitations");
@@ -164,7 +171,8 @@ public class Session extends Observable {
 	/**
 	 * Queues for a game if the current SessionState is lobby.
 	 */
-	public void queueGame() {
+	//@ requires getState() == SessionState.lobby;
+	/* @ pure */ public void queueGame() {
 		if (state != SessionState.lobby) {
 			ui.showModalMessage("You need to be in the lobby to queue for a game.");
 			return;
@@ -176,7 +184,7 @@ public class Session extends Observable {
 	/**
 	 * Cancels queue for a game if the current SessionState is queued.
 	 */
-	public void cancelQueueGame() {
+	/* @ pure */ public void cancelQueueGame() {
 		if (state != SessionState.queued) {
 			ui.showModalMessage("You need to be in the lobby to queue for a game.");
 			return;
@@ -190,7 +198,7 @@ public class Session extends Observable {
 	 * 
 	 * @param message
 	 */
-	private void sendMessage(String message) {
+	/* @ pure */ private void sendMessage(String message) {
 		sock.sendPacket(protocol.textPacket(message));
 	}
 	
@@ -198,6 +206,7 @@ public class Session extends Observable {
 	 * Connection closed handler, sets SessionState to disconnected and sock to
 	 * null.
 	 */
+	//@ ensures getState() == SessionState.disconnected;
 	private void connectionClosed() {
 		setState(SessionState.disconnected);
 		sock = null;
@@ -207,6 +216,7 @@ public class Session extends Observable {
 	 * Connection failed handler, sets SessionState to disconnected and shows a
 	 * message to the user indicating the failure
 	 */
+	//@ ensures getState() == SessionState.disconnected;
 	private void connectFailed() {
 		ui.showModalMessage("Failed to connect to the server");
 		setState(SessionState.disconnected);
@@ -275,6 +285,9 @@ public class Session extends Observable {
 	 * @param inviter
 	 *            The player that sent the invitation
 	 */
+	//@ requires boardSize > 0;
+	//@ requires inviter != "";
+	//@ ensures getState() == SessionState.invited;
 	private void parseInvitation(int boardSize, String inviter) {
 		invitation = new GameInvitation(boardSize, inviter);
 		setState(SessionState.invited);
@@ -288,8 +301,9 @@ public class Session extends Observable {
 	 * @param playerStr
 	 *            the raw player list string received from the server
 	 */
+	//@ requires playerStr.split(" ").length == 0 || playerStr.split(" ")[0].split("-").length == 2;
+	//@ ensures (\forall int i; 0 <= i & i < playerStr.split(" ").length; getPlayerLobbyData().containsKey(playerStr.split(" ")[i].split("-")[0]));
 	private void updatePlayerLobbyData(String playerStr) {
-		System.out.println(playerStr);
 		playerLobbyData = new HashMap<String, String>();
 		String[] playerStates = playerStr.split(" ");
 		for (String playerState : playerStates) {
@@ -300,7 +314,11 @@ public class Session extends Observable {
 		notifyObservers(Ui.UpdateType.lobby);
 	}
 	
-	public Map<String, String> getPlayerLobbyData() {
+	/**
+	 * getter playerPlayerLobbyData
+	 * @return Map of <String playername, String status>
+	 */
+	/*@ pure */  public Map<String, String> getPlayerLobbyData() {
 		return this.playerLobbyData;
 	}
 	
@@ -310,13 +328,14 @@ public class Session extends Observable {
 	 * 
 	 * @param parts
 	 */
+	//@ requires getState() == SessionState.ingame;
 	private void parsePlaced(String gamestate, int x, int y, String currentPlayer,
 			String nextPlayer) {
 		if (state != SessionState.ingame) {
 			UnknownServerError("Received a placed message while not in a game");
 			return;
 		}
-		
+
 		Optional<? extends Player> player = currentGame.getPlayers().stream()
 				.filter(p -> p.getName().equals(currentPlayer)).findAny();
 		if (!player.isPresent()) {
@@ -327,7 +346,6 @@ public class Session extends Observable {
 		currentGame.commitMove(player.get(), y, x);
 		setChanged();
 		notifyObservers(Ui.UpdateType.gamemove);
-		
 		if (!gamestate.equals(GameState.onGoing.toString())) {
 			setState(SessionState.lobby);
 		}
@@ -340,14 +358,14 @@ public class Session extends Observable {
 	 * @param playername1
 	 * @param playername2
 	 */
+	//@ requires (\forall int i; 0 <= i & i < playernames.length; !(playernames[i] == "" || playernames[i] == null));
 	private void startGame(int boardSize, String[] playernames) {
-		ArrayList<Player> players = new ArrayList<>();
+		ArrayList<Player> players = new ArrayList<Player>();
 		for (int i = 0; i < playernames.length; i++) {
 			players.add(new PeerPlayer(playernames[i], i));
 		}
 		currentGame = new Game(boardSize, players);
 		currentGame.startGame();
-		
 		setState(SessionState.ingame);
 	}
 	
@@ -358,7 +376,7 @@ public class Session extends Observable {
 	 * @param errorMessage
 	 *            Error message to display.
 	 */
-	private void parseError(String type, String message) {
+	/*@ pure */  private void parseError(String type, String message) {
 		// TODO put these strings in nice constants
 		switch (type) {
 			case Protocol.E_MESSAGE:
@@ -396,13 +414,14 @@ public class Session extends Observable {
 	 * 
 	 * @return this.currentGame
 	 */
-	public Game getGame() {
+	/*@ pure */  public Game getGame() {
 		return currentGame;
 	}
 	
 	/**
 	 * Sets SessionState to authenticating
 	 */
+	//@ ensures getState() == SessionState.authenticating;
 	private void connected() {
 		setState(SessionState.authenticating);
 	}
@@ -411,12 +430,16 @@ public class Session extends Observable {
 	 * Called when the server sends something that is not according to the
 	 * protocol
 	 */
-	private void UnknownServerError(String reason) {
+	/*@ pure */ private void UnknownServerError(String reason) {
 		// TODO figure out what to actually do with this, do we
 		// disconnect/throw/ingore?
 		System.out.println("Server protocol error: " + reason);
 	}
 	
+	/**
+	 * Main method, only initializes a new Session() and calls run() on it to start the game.
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		Session session = new Session();
 		session.run();
