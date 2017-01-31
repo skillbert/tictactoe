@@ -196,7 +196,7 @@ public class ClientConnection {
 	
 	/**
 	 * Sets the SessionState to queued if the current SessionState is lobby.
-	 * Calls server.findQueue() if succesful.
+	 * Calls server.findQueue() if successful.
 	 */
 	public void queueGame() {
 		if (state != SessionState.lobby) {
