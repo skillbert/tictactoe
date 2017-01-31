@@ -35,7 +35,11 @@ public class ClientConnection {
 	 *            Server class to use
 	 * @param asyncChannel
 	 *            asyncChannel to use
+	 *            
+	 * OpenJML on my computer can't typecheck this class even without JML.
 	 */
+	// @ ensures getState() == SessionState.authenticating;
+	// @ ensures !isLoggedIn();
 	public ClientConnection(Server server, AsynchronousSocketChannel asyncChannel) {
 		this.server = server;
 		state = SessionState.authenticating;
@@ -126,8 +130,13 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Starts a new bot game with the current player and the choosen bot
+	 * Starts a new bot game with the current player and the chosen bot
+	 * 
+	 * @param botname
+	 *            what the name of the bot should be
 	 */
+	// @ requires getState() == SessionState.lobby || getState() == SessionState.queued;
+	// @ ensures getState() == SessionState.ingame;
 	private void startBotGame(String botname) {
 		if (state != SessionState.lobby && state != SessionState.queued) {
 			showModalMessage("You need to be in the lobby to start a new game");
@@ -161,6 +170,9 @@ public class ClientConnection {
 	 * leaves a game if the current SessionState is ingame, sets the
 	 * SessionState to lobby if successful.
 	 */
+	// @ requires getState() == SessionState.ingame;
+	// @ ensures getPlayer() == null;
+	// @ ensures getState() == SessionState.lobby;
 	private void leaveGame() {
 		if (state != SessionState.ingame) {
 			showModalMessage("You need to be in a game to leave one.");
@@ -180,6 +192,8 @@ public class ClientConnection {
 	 * @param col
 	 *            chosen col
 	 */
+	// @ requires getState() == SessionState.ingame;
+	// @ requires row >= 0 && col >= 0 && row < size && col < size;
 	private void commitMove(int row, int col) {
 		if (state != SessionState.ingame) {
 			sendString("error invalidMove");
@@ -196,8 +210,9 @@ public class ClientConnection {
 	
 	/**
 	 * Sets the SessionState to queued if the current SessionState is lobby.
-	 * Calls server.findQueue() if succesful.
+	 * Calls server.findQueue() if successful.
 	 */
+	// @ requires getState() == SessionState.lobby;
 	public void queueGame() {
 		if (state != SessionState.lobby) {
 			showModalMessage("You need to be in the lobby to queue");
@@ -211,6 +226,8 @@ public class ClientConnection {
 	/**
 	 * Sets the SessionState to lobby if the current SessionState is queued.
 	 */
+	// @ requires getState() == SessionState.queued;
+	// @ ensures getState() == SessionState.lobby;
 	public void unQueueGame() {
 		if (state != SessionState.queued) {
 			showModalMessage("You need to be queued in order to leave the queue");
@@ -229,6 +246,11 @@ public class ClientConnection {
 	 * @param name
 	 *            chosen name
 	 */
+	//@ requires getState() == SessionState.authenticating;
+	//@ requires name != null;
+	//@ requires !name.matches("^\\w+$");
+	//@ ensures getState() == SessionState.lobby;
+	//@ ensures getName() != "";
 	private void login(String name) {
 		if (state != SessionState.authenticating) {
 			showModalMessage("Already logged in. You can't set your name at this time");
@@ -268,7 +290,7 @@ public class ClientConnection {
 	 * 
 	 * @return this.name
 	 */
-	public String getName() {
+	/* @ pure */ public String getName() {
 		return name;
 	}
 	
@@ -277,7 +299,7 @@ public class ClientConnection {
 	 * 
 	 * @return this.state
 	 */
-	public SessionState getState() {
+	/* @ pure */ public SessionState getState() {
 		return state;
 	}
 	
@@ -286,6 +308,7 @@ public class ClientConnection {
 	 * 
 	 * @param state
 	 */
+	//@ ensures getState() == state;
 	public void setState(SessionState state) {
 		this.state = state;
 	}
@@ -296,7 +319,7 @@ public class ClientConnection {
 	 * @param message
 	 *            error message to send.
 	 */
-	public void showModalMessage(String message) {
+	/* @ pure */ public void showModalMessage(String message) {
 		sendString("error errorMessage " + message);
 	}
 	
@@ -306,7 +329,7 @@ public class ClientConnection {
 	 * @param str
 	 *            string to send trough this.sock
 	 */
-	public void sendString(String str) {
+	/* @ pure */ public void sendString(String str) {
 		System.out.println(name + "\t<< " + str);
 		sock.sendPacket(socketProtocol.textPacket(str));
 	}
@@ -317,6 +340,7 @@ public class ClientConnection {
 	 * @param player
 	 *            server Player object
 	 */
+	//@ ensures getPlayer() == player;
 	public void setPlayer(RemotePlayer player) {
 		this.player = player;
 	}
@@ -326,7 +350,7 @@ public class ClientConnection {
 	 * 
 	 * @return this.player
 	 */
-	public Player getPlayer() {
+	/* @ pure */ public RemotePlayer getPlayer() {
 		return player;
 	}
 	
@@ -335,7 +359,7 @@ public class ClientConnection {
 	 * 
 	 * @return this.server
 	 */
-	public Server getServer() {
+	/* @ pure */ public Server getServer() {
 		return server;
 	}
 	
@@ -344,7 +368,7 @@ public class ClientConnection {
 	 * 
 	 * @return
 	 */
-	public boolean isLoggedIn() {
+	/* @ pure */ public boolean isLoggedIn() {
 		return state == SessionState.lobby || state == SessionState.queued
 				|| state == SessionState.ingame;
 	}
