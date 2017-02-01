@@ -26,5 +26,10 @@ public final class Commands {
 				SessionState.lobby, "You need to be in the lobby to invite others"));
 		commands.put("reply", new ReplyHandler(session, 2, "(yes|no)", SessionState.invited,
 				"You don't have any invitations to reply to"));
+		commands.put("suggestmove",
+				new SuggestMoveHandler(session, 3, "(easy|medium|hard) <thinktime>",
+						SessionState.ingame, "You need to be in-game to get a move suggestion"));
+		commands.put("bot", new BotGameHandler(session, 2, "(easy|medium|hard)", SessionState.lobby,
+				"You need to be in the lobby to start a new game."));
 	}
 }

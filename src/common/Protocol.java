@@ -41,7 +41,8 @@ public class Protocol {
 	public static final String LEAVEGAME = "leaveGame";
 	public static final String E_INVALIDCOMMAND = "invalidCommand";
 	public static final String E_UNKNOWNCOMMAND = "unknownCommand";
+	public static final String SPECTATE = "spectate";
+	public static final String GAMESTATE = "gameState";
 	public static final int DIM = 4;
 	public static final String CONNECT = "connect";
-
 }

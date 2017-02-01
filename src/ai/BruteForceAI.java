@@ -13,21 +13,22 @@ import common.Mark;
  *
  */
 public class BruteForceAI extends AIBase {
-	private static final int WINVALUE = 100000;
+	protected static final int WINVALUE = 100000;
 	// board value at which we can assume that there is a win in the board
 	protected static final int WINLIMIT = WINVALUE / 2;
+	private static double iterationGoal = 20e6;
+	
 	private int winlength;
 	private int boardSize;
 	protected int maxFieldIndex;
 	protected int nPlayers;
 	protected int layerSize;
-	protected final boolean debugprint = true;
+	protected final boolean debugprint = false;
 	protected int maxdepth;
 	protected int[][][] reverseWins;
 	
 	public BruteForceAI(Game game, int mark) {
 		super(game, mark);
-		this.maxdepth = 6;
 		this.winlength = game.getBoard().getWinLength();
 		this.boardSize = game.getBoard().getSize();
 		this.maxFieldIndex = game.getBoard().getFieldLength();
@@ -42,9 +43,22 @@ public class BruteForceAI extends AIBase {
 		int[] fields = board.getFieldsClone();
 		int[] moves = AIUtil.boardColumnIndexes(board);
 		
+		setIterationGoal(moves, iterationGoal);
 		MoveResult result = recursiveMove(fields, moves, myMark, Board.INVALID_INDEX, maxdepth);
 		
 		return board.position(result.index);
+	}
+	
+	public void setIterationGoal(int[] moves, double amount) {
+		int possiblemoves = 0;
+		for (int move : moves) {
+			if (move >= 0 && move < maxFieldIndex) {
+				possiblemoves++;
+			}
+		}
+		
+		double depth = Math.log(amount) / Math.log(possiblemoves);
+		this.maxdepth = (int) depth;
 	}
 	
 	/**

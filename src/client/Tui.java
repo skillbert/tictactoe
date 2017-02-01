@@ -1,5 +1,6 @@
 package client;
 
+import java.awt.Point;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Observable;
@@ -46,7 +47,7 @@ public class Tui implements Ui {
 				handler.handle(parts);
 			} catch (NumberFormatException | ValidationError e) {
 				showModalMessage(e.getMessage());
-
+				
 			}
 		} else {
 			out.println("Command not recognised, the commands are:");
@@ -93,8 +94,9 @@ public class Tui implements Ui {
 				break;
 			case invited:
 				GameInvitation invite = session.getInvite();
-				if(invite != null) {
-					out.println(String.format("You were invited for a game by %s", invite.getInviter()));
+				if (invite != null) {
+					out.println(String.format("You were invited for a game by %s",
+							invite.getInviter()));
 				}
 				break;
 			case disconnected:
@@ -116,8 +118,9 @@ public class Tui implements Ui {
 		if (session.getState() == SessionState.lobby || session.getState() == SessionState.queued) {
 			out.println("Connected players:");
 			Map<String, String> playerLobbyData = session.getPlayerLobbyData();
-			for (Map.Entry<String, String> entry: playerLobbyData.entrySet()) {
-				out.println(String.format("name: %s | status: %s", entry.getKey(), entry.getValue()));
+			for (Map.Entry<String, String> entry : playerLobbyData.entrySet()) {
+				out.println(
+						String.format("name: %s | status: %s", entry.getKey(), entry.getValue()));
 			}
 		}
 	}
@@ -127,6 +130,11 @@ public class Tui implements Ui {
 			CommandHandler command = this.commands.get(commandName);
 			out.println(String.format("%s %s", commandName, command.usage));
 		}
+	}
+	
+	@Override
+	public void showMoveSuggestion(Point point) {
+		out.println((point.x + 1) + " " + (point.y + 1) + " looks like a good move");
 	}
 }
 

@@ -19,11 +19,22 @@ function start() {
 }
 
 function connect() {
-	if (con) { con.close();}
+	if (con) { con.close(); }
 	con = new WebSocket("ws://" + location.hostname + ":12345");
-	con.onerror = e=>ui.showMessage("connection error: " + e);
+	con.onerror = e=>  ui.showMessage("Failed to connect");
 	con.onmessage = messageReceived;
-	con.onopen = e=> sendMessage("login " + myname); 
+	con.onopen = e=> sendMessage("login " + myname);
+	con.onclose = conClosed;
+}
+
+function conClosed() {
+	field = null;
+	queued = false;
+	ui.drawField();
+	ui.drawLobby();
+	var delay = 2000;
+	ui.showMessage("Disconnected, retrying in " + (delay / 1000 | 0) + " seconds.");
+	setTimeout(connect, delay);
 }
 
 function messageReceived(e){
@@ -50,8 +61,38 @@ function messageReceived(e){
 		ui.showMessage("New game started. " + match[1] + " VS " + match[2]);
 		ui.showMessage(match[1] + "'s turn");
 	}
+	if (match = message.match(/^gameStart (\d+) ([\w ]+)$/)) {
+		var size = +match[1];
+		var players = match[2].split(" ");
+		field = new Field(players, size, size, size);
+		ui.startGame();
+		ui.showMessage("New custom game started - size: " + size + " - " + players.join(" VS "));
+		ui.showMessage(players[0] + "'s turn");
+	}
+	if (match = message.match(/^gameState (\d+) (\d+) ([- \w]+)$/)) {
+		var playercount = +match[1];
+		var size = +match[2];
+		var parts = match[3].split(" ");
+		if (parts.length != playercount + size * size * size) {
+			console.log("invalid boardState message");
+			return;
+		}
+		var players = parts.slice(0, playercount);
+		var tiles = parts.slice(playercount);
+
+		field = new Field(players, size, size, size);
+		for (var a = 0; a < tiles.length; a++) {
+			if (isNaN(tiles[a])) {
+				console.log("invalid boardState message");
+				return;
+			}
+			field.setMark(a, +tiles[a]);
+		}
+		ui.startGame();
+		ui.showMessage("Loaded board state");
+	}
 	if (match = message.match(/^placed (onGoing|won|draw) (\d+) (\d+) (\w+) (\w+)$/)) {
-		field.place(+match[2], +match[3]);
+		field.place(+match[3], +match[2]);
 		ui.drawField();
 		if (match[1] == "won") {
 			ui.showMessage(match[4] + " won!");
@@ -63,9 +104,9 @@ function messageReceived(e){
 			ui.showMessage(match[5] + "'s turn");
 		}
 	}
-	if (match = message.match(/^error (\w+)( (.+))?$/)) {
+	if (match = message.match(/^error (\w+) (.+)$/)) {
 		if (match[1] == "errorMessage") {
-			ui.showMessage(match[3]);
+			ui.showMessage(match[2]);
 		}
 		else {
 			ui.showMessage("Error: " + match[1]);
@@ -85,7 +126,7 @@ function Field(players,w,d,h) {
 	this.depth = d;
 	this.height = h;
 
-	var nPlayers = 2;
+	var nPlayers = players.length;
 	this.turn = 0;
 	var layeroffset = this.width * this.depth;
 
@@ -101,7 +142,9 @@ function Field(players,w,d,h) {
 
 	this.setMark = function (index, mark) {
 		this.fields[index] = mark;
-		this.turn = (this.turn + 1) % nPlayers;
+		if (mark != -1) {
+			this.turn = (this.turn + 1) % nPlayers;
+		}
 	}
 
 	this.reset = function () {
@@ -201,7 +244,8 @@ function LobbyUi() {
 			els.bot1 = eldiv("queueopt", ["Easy bot"]),
 			els.bot2 = eldiv("queueopt", ["Medium bot"]),
 			els.bot3 = eldiv("queueopt", ["Hard bot"]),
-			els.leave=eldiv("queueopt",["Leave game"])
+			els.leave = eldiv("queueopt", ["Leave game"]),
+			els.spectate=eldiv("queueopt",["Spectate"])
 		]),
 		eldiv("playerlist")
 	]);
@@ -224,6 +268,12 @@ function LobbyUi() {
 	els.leave.onclick = function () {
 		sendMessage("leaveGame");
 	}
+	els.spectate.onclick = function () {
+		var name = prompt("Type the name of the player to spectate");
+		if (name) {
+			sendMessage("spectate " + name);
+		}
+	}
 
 	draw();
 }
@@ -238,7 +288,7 @@ function FieldUI() {
 	var els = {};
 
 	var pieceClicked = function (x, y, e) {
-		sendMessage("place " + x + " " + y);
+		sendMessage("place " + y + " " + x);
 	}
 
 	var el = this.el = eldiv("field", [

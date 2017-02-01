@@ -23,6 +23,7 @@
 		.mark.available:hover{display:unset; background:rgba(0,0,0,0.5);}
 		.mark[p=p0]{background:radial-gradient(red,black);}
 		.mark[p=p1]{background:radial-gradient(blue,black);}
+		.mark[p=p2]{background:radial-gradient(green,black);}
 
 		.field{position:relative; background:radial-gradient(#fff,#aaa); z-index:0; flex:1; overflow:hidden; left:0px; top:0px;}
 			.playerlist{display:flex; justify-content:space-around; pointer-events:none;}
@@ -30,8 +31,13 @@
 				.playerdisplay.hasturn{color:white;}
 				.player-0{border-color:red;}
 				.player-1{border-color:blue;}
+				.player-2{border-color:green;}
 				.player-0.hasturn{background:red;}
 				.player-1.hasturn{background:blue;}
+				.player-2.hasturn{background:green;}
+
+		.queueopt{margin:4px; background:rgba(128,128,128,0.2); text-align:center; cursor:pointer; padding:1px 4px; border-radius:10px;}
+		.queueopt:hover{background:rgba(128,128,128,0.4);}
 
 		/* little more suble scrollbars */
 		::-webkit-scrollbar{width: 8px;}

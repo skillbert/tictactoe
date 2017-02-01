@@ -14,15 +14,13 @@ import common.MultiThreadTask;
  *
  */
 public class ThreadedBruteforceAI extends BruteForceAI {
-	private int nThreads;
+	private static final double goalPerThread = 40e6;
 	private int[] beginFields;
 	private int[] beginMoves;
 	private int[] resultScores;
 	
 	public ThreadedBruteforceAI(Game game, int mark) {
 		super(game, mark);
-		maxdepth = 7;
-		nThreads = 8;
 	}
 	
 	@Override
@@ -30,6 +28,8 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 		beginFields = game.getBoard().getFieldsClone();
 		beginMoves = AIUtil.boardColumnIndexes(game.getBoard());
 		resultScores = new int[layerSize];
+		int nThreads = Runtime.getRuntime().availableProcessors();
+		setIterationGoal(beginMoves, nThreads * goalPerThread);
 		
 		MultiThreadTask task = new MultiThreadTask();
 		for (int index = 0; index < layerSize; index++) {

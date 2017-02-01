@@ -3,6 +3,7 @@ package server;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 
+import ai.AIBase;
 import ai.AIPlayer;
 import ai.AIType;
 import common.AsyncSocket;
@@ -35,8 +36,9 @@ public class ClientConnection {
 	 *            Server class to use
 	 * @param asyncChannel
 	 *            asyncChannel to use
-	 *            
-	 * OpenJML on my computer can't typecheck this class even without JML.
+	 * 
+	 *            OpenJML on my computer can't typecheck this class even without
+	 *            JML.
 	 */
 	// @ ensures getState() == SessionState.authenticating;
 	// @ ensures !isLoggedIn();
@@ -120,6 +122,9 @@ public class ClientConnection {
 				case Protocol.REPLY:
 					Invite.replyInvite(this, command.nextString().equals("yes"));
 					break;
+				case Protocol.SPECTATE:
+					spectateGame(command.nextString());
+					break;
 				default:
 					sendString(Protocol.ERROR + " " + Protocol.E_UNKNOWNCOMMAND);
 					break;
@@ -130,35 +135,67 @@ public class ClientConnection {
 	}
 	
 	/**
+	 * Parses a request from a client to spectate a game
+	 * 
+	 * @param playername
+	 */
+	private void spectateGame(String playername) {
+		if (state != SessionState.lobby && state != SessionState.queued) {
+			showModalMessage("You need to be in the lobby to spectate a game.");
+			return;
+		}
+		ClientConnection client = server.findPlayer(playername);
+		if (client == null) {
+			showModalMessage("Can't find " + playername);
+			return;
+		}
+		if (client.getState() != SessionState.ingame) {
+			showModalMessage("This player is not in a game");
+			return;
+		}
+		
+		Game game = client.getPlayer().getGame();
+		RemotePlayer myplayer = new RemotePlayer(this, Mark.EMPTY);
+		myplayer.setGame(game);
+		player = myplayer;
+		state = SessionState.ingame;
+		
+		// send the board state
+		String message = Protocol.GAMESTATE + " " + game.getPlayers().size() + " "
+				+ game.getBoard().getSize();
+		for (Player player : game.getPlayers()) {
+			message += " " + player.getName();
+		}
+		for (int field : game.getBoard().getFieldsClone()) {
+			message += " " + field;
+		}
+		sendString(message);
+	}
+	
+	/**
 	 * Starts a new bot game with the current player and the chosen bot
 	 * 
-	 * @param botname
-	 *            what the name of the bot should be
+	 * @param botid
+	 *            the type of the bot
 	 */
-	// @ requires getState() == SessionState.lobby || getState() == SessionState.queued;
+	// @ requires getState() == SessionState.lobby || getState() ==
+	// SessionState.queued;
 	// @ ensures getState() == SessionState.ingame;
-	private void startBotGame(String botname) {
+	private void startBotGame(String botid) {
 		if (state != SessionState.lobby && state != SessionState.queued) {
 			showModalMessage("You need to be in the lobby to start a new game");
 			return;
 		}
 		// TODO do something to make sure the bot name is available
-		Player bot;
-		switch (botname) {
-			case "easy":
-				bot = new AIPlayer("Shitty_bot", Mark.YELLOW, AIType.random);
-				break;
-			case "medium":
-				bot = new AIPlayer("OK_bot", Mark.YELLOW, AIType.simple);
-				break;
-			case "hard":
-				bot = new AIPlayer("GGWP_bot", Mark.YELLOW, AIType.bruteforce);
-				break;
-			default:
-				sendString(Protocol.ERROR + " " + Protocol.E_MESSAGE
-						+ " Uknown bot type. Bot types are easy, medium and hard.");
-				return;
+		if (!AIBase.getAiTypes().containsKey(botid)) {
+			sendString(Protocol.ERROR + " " + Protocol.E_MESSAGE
+					+ " Uknown bot type. Bot types are easy, medium and hard.");
+			return;
 		}
+		AIType type = AIBase.getAiTypes().get(botid);
+		String botname = AIBase.getAiNames().get(type);
+		Player bot = new AIPlayer(botname, Mark.YELLOW, type);
+		
 		ArrayList<Player> players = new ArrayList<>();
 		players.add(new RemotePlayer(this, Mark.RED));
 		players.add(bot);
@@ -180,6 +217,7 @@ public class ClientConnection {
 		}
 		setState(SessionState.lobby);
 		server.broadcastPlayers();
+		player.getGame().deleteObserver(player);
 		setPlayer(null);
 		// TODO tell our opponent about it, can't with protocol
 	}
@@ -246,11 +284,11 @@ public class ClientConnection {
 	 * @param name
 	 *            chosen name
 	 */
-	//@ requires getState() == SessionState.authenticating;
-	//@ requires name != null;
-	//@ requires !name.matches("^\\w+$");
-	//@ ensures getState() == SessionState.lobby;
-	//@ ensures getName() != "";
+	// @ requires getState() == SessionState.authenticating;
+	// @ requires name != null;
+	// @ requires !name.matches("^\\w+$");
+	// @ ensures getState() == SessionState.lobby;
+	// @ ensures getName() != "";
 	private void login(String name) {
 		if (state != SessionState.authenticating) {
 			showModalMessage("Already logged in. You can't set your name at this time");
@@ -278,8 +316,12 @@ public class ClientConnection {
 	 */
 	public void disconnect() {
 		sock.close();
+		if (state == SessionState.ingame) {
+			player.getGame().deleteObserver(player);
+			// TODO stop the game if this player is a player of the game
+		}
+		
 		setState(SessionState.disconnected);
-		// TODO leave game
 		if (isLoggedIn()) {
 			server.broadcastPlayers();
 		}
@@ -308,7 +350,7 @@ public class ClientConnection {
 	 * 
 	 * @param state
 	 */
-	//@ ensures getState() == state;
+	// @ ensures getState() == state;
 	public void setState(SessionState state) {
 		this.state = state;
 	}
@@ -340,7 +382,7 @@ public class ClientConnection {
 	 * @param player
 	 *            server Player object
 	 */
-	//@ ensures getPlayer() == player;
+	// @ ensures getPlayer() == player;
 	public void setPlayer(RemotePlayer player) {
 		this.player = player;
 	}
