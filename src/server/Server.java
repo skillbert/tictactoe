@@ -14,7 +14,6 @@ import common.Game.EventType;
 import common.Game.GameState;
 import common.Player;
 import common.Protocol;
-import common.RemotePlayer;
 import common.SessionState;
 import common.Util;
 

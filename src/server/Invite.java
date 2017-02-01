@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import common.Player;
 import common.Protocol;
-import common.RemotePlayer;
 import common.SessionState;
 
 public class Invite {

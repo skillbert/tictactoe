@@ -1,11 +1,14 @@
-package common;
+package server;
 
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Observable;
 
+import common.Game;
 import common.Game.GameState;
-import server.ClientConnection;
+import common.Player;
+import common.Protocol;
+import common.SessionState;
 
 public class RemotePlayer implements Player {
 	private ClientConnection connection;

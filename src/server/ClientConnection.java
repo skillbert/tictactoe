@@ -14,7 +14,6 @@ import common.Game;
 import common.Mark;
 import common.Player;
 import common.Protocol;
-import common.RemotePlayer;
 import common.SessionState;
 import common.SocketProtocol;
 import httpServer.BasicHttpServer;

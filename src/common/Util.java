@@ -4,6 +4,14 @@ import java.nio.channels.CompletionHandler;
 import java.util.function.Consumer;
 
 public class Util {
+	/**
+	 * Allows for very much simplified syntax when using a method that uses
+	 * CompletionHandlers. Using a simplehandler makes it possible to use
+	 * lambda's in these methods.
+	 *
+	 * @param <A>
+	 *            The type used by the completionhandler.
+	 */
 	public static class SimpleHandler<A> implements CompletionHandler<A, Void> {
 		private Consumer<A> onComplete;
 		private Consumer<Throwable> onFail;

@@ -177,7 +177,7 @@ public class Session extends Observable {
 			setState(SessionState.lobby);
 		}
 		
-		sendMessage(Protocol.REPLY + " " + (accept ? "yes" : "no"));
+		sendMessage(Protocol.REPLY + " " + (accept ? "yes" : "no") + " " + invitation.getInviter());
 	}
 	
 	/**
@@ -271,6 +271,9 @@ public class Session extends Observable {
 						break;
 					
 					case Protocol.PLAYERS:
+						if (state == SessionState.authenticating) {
+							setState(SessionState.lobby);
+						}
 						updatePlayerLobbyData(command.remainingString());
 						break;
 					
