@@ -89,7 +89,7 @@ public class SimpleAI extends AIBase {
 		int bestindex = Board.INVALID_INDEX;
 		for (int index : moves) {
 			int score = attscores[index] + defscores[index];
-			System.out.println(score);
+			// System.out.println(score);
 			if (score > best || bestindex == Board.INVALID_INDEX) {
 				best = score;
 				bestindex = index;

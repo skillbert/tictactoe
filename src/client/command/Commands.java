@@ -31,5 +31,7 @@ public final class Commands {
 						SessionState.ingame, "You need to be in-game to get a move suggestion"));
 		commands.put("bot", new BotGameHandler(session, 2, "(easy|medium|hard)", SessionState.lobby,
 				"You need to be in the lobby to start a new game."));
+		commands.put("setbot", new ToggleBotHandler(session, 2, "(off|easy|medium|hard)",
+				SessionState.ingame, "You need to be in a game to set your bot."));
 	}
 }

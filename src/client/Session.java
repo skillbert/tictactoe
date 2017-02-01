@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Optional;
 
+import ai.AIBase;
 import client.Ui.UpdateType;
 import common.AsyncSocket;
 import common.Board;
@@ -30,6 +31,7 @@ public class Session extends Observable {
 	private Map<String, String> playerLobbyData = new HashMap<String, String>();
 	private GameInvitation invitation;
 	private String myName;
+	private AIBase aiMoveSource;
 	
 	/**
 	 * Initializes a new Session by creating a new Peerplayer (network player)
@@ -361,7 +363,10 @@ public class Session extends Observable {
 		notifyObservers(Ui.UpdateType.gamemove);
 		if (!gamestate.equals(GameState.onGoing.toString())) {
 			setState(SessionState.lobby);
+			setAiMoveSource(null);
 		}
+		
+		startAiMove();
 	}
 	
 	/**
@@ -489,6 +494,33 @@ public class Session extends Observable {
 	public static void main(String[] args) {
 		Session session = new Session();
 		session.run();
+	}
+	
+	/**
+	 * Set the current bot or turns it off
+	 * 
+	 * @param ai
+	 *            a AIBase instance or null to turn automatic moves off
+	 */
+	public void setAiMoveSource(AIBase ai) {
+		this.aiMoveSource = ai;
+		startAiMove();
+	}
+	
+	/**
+	 * checks if the AI should do a move and starts the ai if it should
+	 */
+	private void startAiMove() {
+		if (state != SessionState.ingame) {
+			return;
+		}
+		if (!currentGame.getTurn().getName().equals(myName)) {
+			return;
+		}
+		if (aiMoveSource == null) {
+			return;
+		}
+		aiMoveSource.startThinkMove(p -> commitMove(p.x, p.y));
 	}
 }
 
