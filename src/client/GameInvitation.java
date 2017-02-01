@@ -9,7 +9,7 @@ public class GameInvitation {
 		this.inviter = inviter;
 	}
 	
-	public String getIntviter() {
+	public String getInviter() {
 		return inviter;
 	}
 	

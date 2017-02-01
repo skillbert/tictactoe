@@ -152,6 +152,7 @@ public class Gui extends JFrame implements Ui {
 				setTitle("Queueing");
 				break;
 			case disconnected:
+				showPanel(connectPanel);
 				setTitle("Disconnected");
 				break;
 			case ingame:

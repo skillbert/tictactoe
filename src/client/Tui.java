@@ -64,6 +64,7 @@ public class Tui implements Ui {
 				gameChanged();
 				break;
 			case lobby:
+				playersChanged();
 				break;
 		}
 	}
@@ -90,6 +91,12 @@ public class Tui implements Ui {
 				out.println(
 						"Queued for random game. A game will start when another player enters the queue.");
 				break;
+			case invited:
+				GameInvitation invite = session.getInvite();
+				if(invite != null) {
+					out.println(String.format("You were invited for a game by %s", invite.getInviter()));
+				}
+				break;
 			case disconnected:
 				out.println("Disconnected from server");
 				break;
@@ -103,6 +110,16 @@ public class Tui implements Ui {
 	private void gameChanged() {
 		Game game = session.getGame();
 		out.println(game);
+	}
+	
+	private void playersChanged() {
+		if (session.getState() == SessionState.lobby || session.getState() == SessionState.queued) {
+			out.println("Connected players:");
+			Map<String, String> playerLobbyData = session.getPlayerLobbyData();
+			for (Map.Entry<String, String> entry: playerLobbyData.entrySet()) {
+				out.println(String.format("name: %s | status: %s", entry.getKey(), entry.getValue()));
+			}
+		}
 	}
 	
 	private void printHelp() {
