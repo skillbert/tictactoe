@@ -400,7 +400,7 @@ public class Session extends Observable {
 				// happen
 				break;
 			case Protocol.E_INVITATIONDENIED:
-				ui.showModalMessage(message.split(" ")[0] + " rejected the party invitation.");
+				ui.showModalMessage(message.split(" ")[0] + " rejected the party invitation or is not on the server.");
 				setState(SessionState.lobby);
 				break;
 			default:
@@ -416,6 +416,14 @@ public class Session extends Observable {
 	 */
 	/*@ pure */  public Game getGame() {
 		return currentGame;
+	}
+	
+	/**
+	 * getter invite
+	 * @return this.invitation
+	 */
+	/*@ pure */ public GameInvitation getInvite() {
+		return this.invitation;
 	}
 	
 	/**
