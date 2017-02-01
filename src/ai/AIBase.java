@@ -13,6 +13,18 @@ public abstract class AIBase {
 	protected int myMark;
 	protected Callback1<Point> onDone;
 	
+	public static AIBase getAi(Game game, int mark, AIType aiType) {
+		switch (aiType) {
+			case random:
+				return new SimpleAI(game, mark);
+			case bruteforce:
+				return new ThreadedBruteforceAI(game, mark);
+			case simple:
+			default:
+				return new RandomAi(game, mark);
+		}
+	}
+	
 	/**
 	 * Initializes an AIPlayer with name and mark
 	 * 

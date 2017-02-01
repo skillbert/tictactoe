@@ -48,7 +48,8 @@ public class Invite {
 		// update the state and send everything to the clients
 		for (ClientConnection client : clients) {
 			client.setState(SessionState.invited);
-			client.sendString(Protocol.INVITATION + " " + boardSize + " " + sender.getName());
+			client.sendString(Protocol.INVITATION + " " + boardSize + " " + (clients.size() + 1)
+					+ " " + sender.getName());
 		}
 		sender.setState(SessionState.invited);
 		clients.add(sender);

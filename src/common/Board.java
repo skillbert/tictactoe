@@ -89,8 +89,8 @@ public class Board {
 				}
 			}
 		}
-		// calculate all win conditions
 		
+		// calculate all win conditions
 		wincons = new ArrayList<int[]>();
 		int wl = winLength;// win length
 		for (int[] step : stepdirs) {
@@ -141,9 +141,10 @@ public class Board {
 	 * @param index
 	 * @return
 	 */
-	//@ requires index < getFieldLength();
-	//@ ensures \result.x < DIM & \result.y < DIM & \result.x > 0 & \result.y > 0;
-	/*@ pure */ public Point position(int index) {
+	// @ requires index < getFieldLength();
+	// @ ensures \result.x < DIM & \result.y < DIM & \result.x > 0 & \result.y >
+	// 0;
+	/* @ pure */ public Point position(int index) {
 		return new Point((index / size) % size, index % size);
 	}
 	
@@ -176,7 +177,7 @@ public class Board {
 	 */
 	
 	// @ ensures \result & index < getFieldLength() & index >= 0 || !\result &
-	// index > getFieldLength() & index < 0;
+	// (index > getFieldLength() || index < 0);
 	/* @ pure */ public boolean isField(int index) {
 		return 0 <= index && index < size * size * size;
 	}
@@ -252,7 +253,7 @@ public class Board {
 	/*
 	 * @ ensures (\forall int i; i > 0 & i <= getWinConditions().size();
 	 * IntStream.of(getWinConditions().get(i)).anyMatch(j -> j == Mark.EMPTY)) &
-	 * \result != Mark.EMPTY; pure
+	 * \result == Mark.EMPTY; pure
 	 */ public int findWinner() {
 		for (int[] wincon : wincons) {
 			int mark = fields[wincon[0]];

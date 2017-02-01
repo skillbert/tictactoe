@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Optional;
 
+import ai.AIBase;
+import ai.AIType;
 import client.Ui.UpdateType;
 import common.AsyncSocket;
 import common.Board;
@@ -36,7 +38,7 @@ public class Session extends Observable {
 	 */
 	public Session() {
 		setState(SessionState.disconnected);
-		ui = new Gui(this);
+		ui = new Tui(this);
 		this.addObserver(ui);
 	}
 	
@@ -422,6 +424,9 @@ public class Session extends Observable {
 		session.run();
 	}
 	
+	public Point suggestMove(Board board,AIType aiType){
+		AIBase ai=AIBase
+	}
 }
 
 

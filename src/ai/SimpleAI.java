@@ -32,7 +32,7 @@ public class SimpleAI extends AIBase {
 		// loop all win conditions in a reverse loop so we can remove indexes
 		// from it
 		for (int i = wincons.size() - 1; i >= 0; i--) {
-			// count the amount of marks every player has in ths row
+			// count the amount of marks every player has in this row
 			int[] markcount = new int[game.getPlayers().size()];
 			for (int index : wincons.get(i)) {
 				int mark = board.getField(index);

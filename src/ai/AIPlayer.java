@@ -28,18 +28,7 @@ public class AIPlayer implements Player {
 	
 	@Override
 	public void setGame(Game game) {
-		switch (aiType) {
-			case random:
-				this.ai = new RandomAi(game, myMark);
-				break;
-			case simple:
-				this.ai = new SimpleAI(game, myMark);
-				break;
-			case bruteforce:
-				this.ai = new ThreadedBruteforceAI(game, myMark);
-				break;
-		}
-		
+		this.ai = AIBase.getAi(game, myMark, aiType);
 		this.game = game;
 		game.addObserver(this);
 	}
