@@ -49,7 +49,7 @@ public class Board {
 	}
 	
 	/**
-	 * Returns a new Board object with the same fields marked as the current
+	 * Returns a new Board object with the same fields marked as the current.
 	 * board
 	 * 
 	 * @return deepcopy of the current Board object
@@ -92,7 +92,7 @@ public class Board {
 		
 		// calculate all win conditions
 		wincons = new ArrayList<int[]>();
-		int wl = winLength;// win length
+		int wl = winLength; // win length
 		for (int[] step : stepdirs) {
 			for (int row = 0; row < size; row++) {
 				if (row + step[0] * (wl - 1) < 0 || row + step[0] * (wl - 1) >= size) {
@@ -136,7 +136,7 @@ public class Board {
 	}
 	
 	/**
-	 * Gets the x,y position of a field with the given index
+	 * Gets the x,y position of a field with the given index.
 	 * 
 	 * @param index
 	 * @return
@@ -150,7 +150,7 @@ public class Board {
 	
 	/**
 	 * Returns the index where a piece will fall if inserted at the given row
-	 * and column, returns INVALID_INDEX in case the column is full
+	 * and column, returns INVALID_INDEX in case the column is full.
 	 * 
 	 * @param row
 	 * @param column
@@ -195,7 +195,7 @@ public class Board {
 	}
 	
 	/**
-	 * Returns Mark at index in fields
+	 * Returns Mark at index in fields.
 	 * 
 	 * @param index
 	 * @return Mark
@@ -207,7 +207,7 @@ public class Board {
 	}
 	
 	/**
-	 * Sets index index in fields to Mark m
+	 * Sets index index in fields to Mark m.
 	 * 
 	 * @param index
 	 * @param m
@@ -274,7 +274,7 @@ public class Board {
 	}
 	
 	/**
-	 * Resets the board
+	 * Resets the board.
 	 */
 	// @ ensures (\forall int i; i > 0 & i < getSize(); getField(i) ==
 	// Mark.EMPTY);
@@ -283,7 +283,7 @@ public class Board {
 	}
 	
 	/**
-	 * getter size of the board
+	 * getter size of the board.
 	 * 
 	 * @return the size of the board
 	 */
@@ -292,7 +292,7 @@ public class Board {
 	}
 	
 	/**
-	 * getter win conditions
+	 * getter win conditions.
 	 * 
 	 * @return a list of arrays with all possible winning combinations
 	 */
@@ -310,7 +310,7 @@ public class Board {
 	}
 	
 	/**
-	 * getter array with a copy of all fields
+	 * getter array with a copy of all fields.
 	 * 
 	 * @return an copy of the fields array
 	 */
@@ -357,7 +357,7 @@ public class Board {
 	
 	
 	/**
-	 * Getter field length
+	 * Getter field length.
 	 * 
 	 * @return the total number of fields
 	 */

@@ -22,8 +22,8 @@ public class Tui implements Ui {
 		out = System.out;
 		in = new Scanner(System.in);
 		this.session = session;
-		Commands Commands = new Commands(this.session);
-		commands = Commands.commands;
+		Commands commandsClass = new Commands(this.session);
+		commands = commandsClass.commands;
 	}
 	
 	@Override
@@ -90,7 +90,8 @@ public class Tui implements Ui {
 				break;
 			case queued:
 				out.println(
-						"Queued for random game. A game will start when another player enters the queue.");
+					"Queued for random game. "
+					+ "A game will start when another player enters the queue.");
 				break;
 			case invited:
 				GameInvitation invite = session.getInvite();

@@ -58,7 +58,7 @@ public abstract class AIBase {
 	}
 	
 	/**
-	 * Initializes an AIPlayer with name and mark
+	 * Initializes an AIPlayer with name and mark.
 	 * 
 	 * @param name
 	 *            AIPlayer name to use

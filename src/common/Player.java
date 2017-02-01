@@ -4,19 +4,19 @@ import java.util.Observer;
 
 public abstract interface Player extends Observer {
 	/**
-	 * getter player name / this.name
+	 * getter player name / this.name.
 	 * 
 	 * @return player name
 	 */
 	public String getName();
 
 	/**
-	 * Returns the mark of this player
+	 * Returns the mark of this player.
 	 */
 	public int getMark();
 
 	/**
-	 * Used to display a message to the player
+	 * Used to display a message to the player.
 	 * 
 	 * @param message
 	 *            the message to show
@@ -24,7 +24,7 @@ public abstract interface Player extends Observer {
 	public void showModalMessage(String message);
 
 	/**
-	 * Connects this player with a game
+	 * Connects this player with a game.
 	 * 
 	 * @param game
 	 */

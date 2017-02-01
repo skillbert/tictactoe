@@ -7,7 +7,8 @@ import exceptions.PortFormatException;
 
 public class ConnectHandler extends CommandHandler {
 	
-	public ConnectHandler(Session session, int minArgs, String usage, SessionState requiredState, String wrongStateMessage) {
+	public ConnectHandler(Session session, int minArgs, String usage, 
+			SessionState requiredState, String wrongStateMessage) {
 		super(session, minArgs, usage, requiredState, wrongStateMessage);
 	}
 	

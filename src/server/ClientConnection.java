@@ -9,6 +9,8 @@ import ai.AIType;
 import common.AsyncSocket;
 import common.CommandParser;
 import common.CommandParser.CommandFormatException;
+import http.BasicHttpServer;
+import http.WebSocketProtocol;
 import common.DirectProtocol;
 import common.Game;
 import common.Mark;
@@ -16,8 +18,6 @@ import common.Player;
 import common.Protocol;
 import common.SessionState;
 import common.SocketProtocol;
-import httpServer.BasicHttpServer;
-import httpServer.WebSocketProtocol;
 
 public class ClientConnection {
 	private String name;
@@ -29,7 +29,7 @@ public class ClientConnection {
 	private SocketProtocol socketProtocol;
 	
 	/**
-	 * Initializes a ClientConnection
+	 * Initializes a ClientConnection.
 	 * 
 	 * @param server
 	 *            Server class to use
@@ -56,7 +56,7 @@ public class ClientConnection {
 	
 	/**
 	 * Parses a raw packet from connection and passes it on to the correct
-	 * module
+	 * module.
 	 * 
 	 * @param packet
 	 *            the packet to parse
@@ -86,7 +86,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Parse a client message according to the protocol
+	 * Parse a client message according to the protocol.
 	 * 
 	 * @param message
 	 *            client message to parse
@@ -134,7 +134,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Parses a request from a client to spectate a game
+	 * Parses a request from a client to spectate a game.
 	 * 
 	 * @param playername
 	 */
@@ -162,8 +162,8 @@ public class ClientConnection {
 		// send the board state
 		String message = Protocol.GAMESTATE + " " + game.getPlayers().size() + " "
 				+ game.getBoard().getSize();
-		for (Player player : game.getPlayers()) {
-			message += " " + player.getName();
+		for (Player nextPlayer : game.getPlayers()) {
+			message += " " + nextPlayer.getName();
 		}
 		for (int field : game.getBoard().getFieldsClone()) {
 			message += " " + field;
@@ -172,7 +172,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Starts a new bot game with the current player and the chosen bot
+	 * Starts a new bot game with the current player and the chosen bot.
 	 * 
 	 * @param botid
 	 *            the type of the bot
@@ -278,9 +278,9 @@ public class ClientConnection {
 	/**
 	 * Attempts to log in with the given name, will send errors if the name is
 	 * not available or valid or if this connection can not log in at this
-	 * moment
+	 * moment.
 	 * 
-	 * @param name
+	 * @param loginName
 	 *            chosen name
 	 */
 	// @ requires getState() == SessionState.authenticating;
@@ -288,22 +288,22 @@ public class ClientConnection {
 	// @ requires !name.matches("^\\w+$");
 	// @ ensures getState() == SessionState.lobby;
 	// @ ensures getName() != "";
-	private void login(String name) {
+	private void login(String loginName) {
 		if (state != SessionState.authenticating) {
 			showModalMessage("Already logged in. You can't set your name at this time");
 			return;
 		}
 		
-		if (!name.matches("^\\w+$")) {
+		if (!loginName.matches("^\\w+$")) {
 			sendString("error invalidCharacters");
 			return;
 		}
-		if (server.findPlayer(name) != null) {
+		if (server.findPlayer(loginName) != null) {
 			sendString("error nameTaken");
 			return;
 		}
 		
-		this.name = name;
+		this.name = loginName;
 		setState(SessionState.lobby);
 		sendString(Protocol.LOBBY);
 		
@@ -311,7 +311,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * disconnect by closing the this.sock
+	 * disconnect by closing the this.sock.
 	 */
 	public void disconnect() {
 		sock.close();
@@ -327,7 +327,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * getter name
+	 * getter name.
 	 * 
 	 * @return this.name
 	 */
@@ -336,7 +336,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * getter state
+	 * getter state.
 	 * 
 	 * @return this.state
 	 */
@@ -345,7 +345,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * setter this.state
+	 * setter this.state.
 	 * 
 	 * @param state
 	 */
@@ -355,7 +355,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Send an error message
+	 * Send an error message.
 	 * 
 	 * @param message
 	 *            error message to send.
@@ -365,7 +365,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Send a String str trough the AsyncSocket this.sock
+	 * Send a String str trough the AsyncSocket this.sock.
 	 * 
 	 * @param str
 	 *            string to send trough this.sock
@@ -376,7 +376,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * setter server Player
+	 * setter server Player.
 	 * 
 	 * @param player
 	 *            server Player object
@@ -387,7 +387,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * getter server Player
+	 * getter server Player.
 	 * 
 	 * @return this.player
 	 */
@@ -396,7 +396,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * getter Server
+	 * getter Server.
 	 * 
 	 * @return this.server
 	 */
@@ -405,7 +405,7 @@ public class ClientConnection {
 	}
 	
 	/**
-	 * Gets whether this client connection is a player that is logged in
+	 * Gets whether this client connection is a player that is logged in.
 	 * 
 	 * @return
 	 */

@@ -1,4 +1,4 @@
-package httpServer;
+package http;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -29,8 +29,8 @@ public class WebSocketProtocol implements SocketProtocol {
 	private AsyncSocket sock;
 	
 	@Override
-	public void setSocket(AsyncSocket sock) {
-		this.sock = sock;
+	public void setSocket(AsyncSocket asock) {
+		this.sock = asock;
 	}
 	
 	@Override
@@ -46,11 +46,11 @@ public class WebSocketProtocol implements SocketProtocol {
 		byte[] packet = new byte[2 + (payload.length > 125 ? 2 : 0) + payload.length];
 		int i = 0;
 		// write packet the flags
-		packet[i] |= 0b10000000;// fin
-		packet[i] |= optcode;// optcode
+		packet[i] |= 0b10000000; // fin
+		packet[i] |= optcode; // optcode
 		i++;
 		// write the length
-		packet[i] |= (payload.length > 125 ? 126 : payload.length);// tinylength
+		packet[i] |= payload.length > 125 ? 126 : payload.length; // tinylength
 		i++;
 		if (payload.length > 125) {
 			packet[i++] = (byte) (payload.length >> 8);
@@ -67,15 +67,15 @@ public class WebSocketProtocol implements SocketProtocol {
 			// header of the packet
 			int i = 0;
 			boolean fin = (packet[i] & 0b10000000) != 0;
-			int optcode = (packet[i] & 0b00001111);
+			int optcode = packet[i] & 0b00001111;
 			i++;
 			boolean mask = (packet[i] & 0b10000000) != 0;
-			int length = (packet[i] & 0b01111111);
+			int length = packet[i] & 0b01111111;
 			i++;
 			if (length == 126) {
 				length = packet[i++] << 8 + packet[i++];
 			} else if (length == 127) {
-				sock.connectionClosed();// 65kb packets not supported
+				sock.connectionClosed(); // 65kb packets not supported
 			}
 			byte[] maskKey = new byte[4];
 			if (mask) {
@@ -95,7 +95,7 @@ public class WebSocketProtocol implements SocketProtocol {
 			}
 			
 			if (!fin) {
-				sock.connectionClosed();// multipacket messages not suported
+				sock.connectionClosed(); // multipacket messages not suported
 			}
 			// close optcode
 			switch (optcode) {
@@ -110,7 +110,7 @@ public class WebSocketProtocol implements SocketProtocol {
 				case OPTCODE_TEXT:
 					return new String(payload, StandardCharsets.UTF_8);
 				case OPTCODE_BINARY:
-					sock.connectionClosed();// not supported
+					sock.connectionClosed(); // not supported
 					break;
 			}
 		} catch (IndexOutOfBoundsException ex) {

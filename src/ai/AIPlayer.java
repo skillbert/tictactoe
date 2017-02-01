@@ -13,7 +13,7 @@ public class AIPlayer implements Player {
 	private AIBase ai;
 	
 	/**
-	 * Initializes an AIPlayer with name and mark
+	 * Initializes an AIPlayer with name and mark.
 	 * 
 	 * @param name
 	 *            AIPlayer name to use

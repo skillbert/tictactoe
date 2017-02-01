@@ -11,6 +11,7 @@ public class MissingArgsException extends ValidationError {
 	
 	@Override
 	public String getMessage() {
-		return String.format("Total of %d args suppplied, at least %d needed", this.argCount, this.minArgs);
+		return String.format("Total of %d args suppplied, "
+				+ "at least %d needed", this.argCount, this.minArgs);
 	}
 }

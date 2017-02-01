@@ -14,7 +14,7 @@ public class CommandParser {
 	private String original;
 	
 	/**
-	 * Creates a new command from the given string
+	 * Creates a new command from the given string.
 	 * 
 	 * @param command
 	 *            the command string to parse
@@ -27,7 +27,7 @@ public class CommandParser {
 	
 	/**
 	 * gets the amount of arguments, that is the amount of arguments strings
-	 * excluding the command itself
+	 * excluding the command itself.
 	 * 
 	 * @return
 	 */
@@ -60,7 +60,7 @@ public class CommandParser {
 	
 	/**
 	 * Gets the next argument or returns the fallback value is there are no
-	 * arguments left
+	 * arguments left.
 	 * 
 	 * @param fallback
 	 *            The string to return if there are no arguments left
@@ -102,7 +102,7 @@ public class CommandParser {
 	}
 	
 	/**
-	 * Parses the next argument as an int and returns it
+	 * Parses the next argument as an int and returns it.
 	 * 
 	 * @return The next argument parsed as int
 	 * @throws CommandFormatException
@@ -114,7 +114,7 @@ public class CommandParser {
 	}
 	
 	/**
-	 * Parses the next argument as an in in the given range
+	 * Parses the next argument as an in in the given range.
 	 * 
 	 * @param min
 	 *            the minimum value (inclusive)
@@ -141,7 +141,7 @@ public class CommandParser {
 	}
 	
 	/**
-	 * Checks if there is a next argument
+	 * Checks if there is a next argument.
 	 * 
 	 * @return true if there is a next argument, false if there are no more
 	 *         arguments

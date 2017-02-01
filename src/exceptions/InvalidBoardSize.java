@@ -7,6 +7,6 @@ public class InvalidBoardSize extends ValidationError {
 	
 	@Override
 	public String getMessage() {
-		return("invalid board size format");
+		return "invalid board size format";
 	}
 }

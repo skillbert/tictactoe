@@ -12,6 +12,7 @@ public class InvalidPlaceInput extends ValidationError {
 	@Override
 	public String getMessage() {
 		// returns x/y + 1 to go from internal model to UI model.
-		return String.format("The selected field at (%d, %d) is not in range", this.x + 1, this.y + 1);
+		return String.format("The selected field at (%d, %d) is not in range", 
+				this.x + 1, this.y + 1);
 	}
 }

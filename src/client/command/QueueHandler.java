@@ -5,7 +5,8 @@ import common.SessionState;
 
 public class QueueHandler extends CommandHandler {
 	
-	public QueueHandler(Session session, int minArgs, String usage, SessionState requiredState, String wrongStateMessage) {
+	public QueueHandler(Session session, int minArgs, String usage, 
+			SessionState requiredState, String wrongStateMessage) {
 		super(session, minArgs, usage, requiredState, wrongStateMessage);
 	}
 	@Override

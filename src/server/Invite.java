@@ -59,7 +59,7 @@ public class Invite {
 	}
 	
 	/**
-	 * Handles everything related to a reply by a client
+	 * Handles everything related to a reply by a client.
 	 * 
 	 * @param client
 	 *            the client which replied
@@ -83,7 +83,7 @@ public class Invite {
 	}
 	
 	/**
-	 * finds an invite corresponding to the given client
+	 * finds an invite corresponding to the given client.
 	 * 
 	 * @param client
 	 *            the client to search for
@@ -99,7 +99,7 @@ public class Invite {
 	}
 	
 	/**
-	 * accepts an invitations and starts a game if all players accepted
+	 * accepts an invitations and starts a game if all players accepted.
 	 * 
 	 * @param client
 	 *            the client that accepted
@@ -118,7 +118,7 @@ public class Invite {
 	}
 	
 	/**
-	 * denies an invitation and sends an error to all other players
+	 * denies an invitation and sends an error to all other players.
 	 * 
 	 * @param denyer
 	 */
@@ -137,7 +137,7 @@ public class Invite {
 	}
 	
 	/**
-	 * Creates a new invite
+	 * Creates a new invite.
 	 * 
 	 * @param sender
 	 * @param boardSize

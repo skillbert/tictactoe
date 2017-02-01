@@ -7,7 +7,7 @@ import common.Game;
 import common.Mark;
 
 /**
- * An Ai that recursively tries all moves up to a certain depth
+ * An Ai that recursively tries all moves up to a certain depth.
  * 
  * @author Wilbert
  *
@@ -63,7 +63,7 @@ public class BruteForceAI extends AIBase {
 	
 	/**
 	 * Recursively tries moves and returns the resulting board state if all
-	 * players play perfectly from the current board state on
+	 * players play perfectly from the current board state on.
 	 * 
 	 * @param fields
 	 *            the current board state
@@ -118,7 +118,7 @@ public class BruteForceAI extends AIBase {
 	}
 	
 	/**
-	 * debug function to display the internal move scores
+	 * debug function to display the internal move scores.
 	 * 
 	 * @param index
 	 * @param value
@@ -127,7 +127,7 @@ public class BruteForceAI extends AIBase {
 	 */
 	protected void printMove(int index, int value, int depth, int turnmark) {
 		String str = depth + String.format("%1$" + (13 - depth * 2) + "s", "");
-		str += (turnmark == myMark ? "myturn" : "opturn");
+		str += turnmark == myMark ? "myturn" : "opturn";
 		str += " " + ((index / boardSize) % boardSize) + "," + (index % boardSize);
 		// str += " " + index;
 		str += "\t" + value;
@@ -135,7 +135,7 @@ public class BruteForceAI extends AIBase {
 	}
 	
 	/**
-	 * Calculates a value of the current board state
+	 * Calculates a value of the current board state.
 	 * 
 	 * @param fields
 	 *            the board
@@ -151,7 +151,7 @@ public class BruteForceAI extends AIBase {
 	
 	/**
 	 * Calculates the change in board value between the current state and if the
-	 * given field index would be an empty mark
+	 * given field index would be an empty mark.
 	 * 
 	 * @param fields
 	 *            the complete board
@@ -174,7 +174,7 @@ public class BruteForceAI extends AIBase {
 	}
 	
 	/**
-	 * calculates the score of a set of fields that represent a row
+	 * calculates the score of a set of fields that represent a row.
 	 * 
 	 * @param fields
 	 *            the complete board of the game
@@ -226,7 +226,7 @@ public class BruteForceAI extends AIBase {
 	}
 	
 	/**
-	 * Represents an outcome of a certain move
+	 * Represents an outcome of a certain move.
 	 * 
 	 * @author Wilbert
 	 *

@@ -9,12 +9,12 @@ public interface Ui extends Observer {
 	}
 	
 	/**
-	 * Shows a message to the user
+	 * Shows a message to the user.
 	 */
 	public abstract void showModalMessage(String message);
 	
 	/**
-	 * Shows a move suggestion to the user
+	 * Shows a move suggestion to the user.
 	 * 
 	 * @param index
 	 */
@@ -22,7 +22,7 @@ public interface Ui extends Observer {
 	
 	/**
 	 * Runs the ui on the current thread and blocks until the user leaves the
-	 * application
+	 * application.
 	 */
 	public abstract void run();
 }

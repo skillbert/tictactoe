@@ -9,7 +9,7 @@ import javax.swing.JTextField;
 import client.command.CommandHandler;
 import client.gui.Gui;
 
-public class LoginPanel extends Panel{
+public class LoginPanel extends Panel {
 	private Gui gui;
 	private JTextField nameTextField;
 	

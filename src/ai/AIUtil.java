@@ -6,7 +6,7 @@ import common.Board;
 
 public class AIUtil {
 	/**
-	 * Takes a Board and returns all possible moves for use in AI
+	 * Takes a Board and returns all possible moves for use in AI.
 	 * 
 	 * @param board
 	 *            Board class to use

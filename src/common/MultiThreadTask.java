@@ -5,7 +5,7 @@ import java.util.Queue;
 import java.util.function.Consumer;
 
 /**
- * Runs a set of tasks concurrently on different threads
+ * Runs a set of tasks concurrently on different threads.
  * 
  * @author Wilbert
  *
@@ -23,35 +23,35 @@ public class MultiThreadTask {
 	}
 	
 	/**
-	 * Adds a task to the task list
+	 * Adds a task to the task list.
 	 * 
 	 * @param task
 	 *            The function to run
 	 * @param arg
 	 *            The argument to pass to this function when it runs
 	 */
-	public void AddTask(Consumer<Object> task, Object arg) {
+	public void addTask(Consumer<Object> task, Object arg) {
 		synchronized (this) {
 			tasks.add(new ThreadTask(task, arg));
 		}
 	}
 	
 	/**
-	 * Set the task to run when all other tasks are done
+	 * Set the task to run when all other tasks are done.
 	 * 
-	 * @param endTask
+	 * @param onFinishEndTask
 	 *            The function to run
 	 * @param arg
 	 *            The argument to pass to this function
 	 */
-	public void onFinish(Consumer<Object> endTask, Object arg) {
+	public void onFinish(Consumer<Object> onFinishEndTask, Object arg) {
 		synchronized (this) {
-			this.endTask = new ThreadTask(endTask, arg);
+			this.endTask = new ThreadTask(onFinishEndTask, arg);
 		}
 	}
 	
 	/**
-	 * Starts a new thread that will run tasks from the task list
+	 * Starts a new thread that will run tasks from the task list.
 	 */
 	public void addThread() {
 		synchronized (this) {
@@ -62,7 +62,7 @@ public class MultiThreadTask {
 	}
 	
 	/**
-	 * Adds a number of threads to the task
+	 * Adds a number of threads to the task.
 	 * 
 	 * @param amount
 	 *            The amount of threads to start
@@ -74,7 +74,7 @@ public class MultiThreadTask {
 	}
 	
 	/**
-	 * Returns the next task to run
+	 * Returns the next task to run.
 	 * 
 	 * @return a task to run of null if there are none left and the thread
 	 *         should terminate
@@ -124,7 +124,7 @@ public class MultiThreadTask {
 	}
 	
 	/**
-	 * A consumer function together with it's argument
+	 * A consumer function together with it's argument.
 	 * 
 	 * @author Wilbert
 	 *

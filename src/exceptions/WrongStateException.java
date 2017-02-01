@@ -13,6 +13,7 @@ public class WrongStateException extends ValidationError {
 	
 	@Override
 	public String getMessage() {
-		return String.format("Required state is %s while the current state is %s", this.requiredState, this.currentState);
+		return String.format("Required state is %s while the current state is %s", 
+				this.requiredState, this.currentState);
 	}
 }

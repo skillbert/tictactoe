@@ -52,7 +52,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * getter state
+	 * getter state.
 	 * 
 	 * @return this.state
 	 */
@@ -61,7 +61,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * getter myName
+	 * getter myName.
 	 * 
 	 * @return this.myName
 	 */
@@ -70,7 +70,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * setter this.state
+	 * setter this.state.
 	 * 
 	 * @param state
 	 *            state to set.
@@ -83,7 +83,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Sets up a connection to host:port using an AcynSocket()
+	 * Sets up a connection to host:port using an AcynSocket().
 	 * 
 	 * @param host
 	 *            Host to connect to
@@ -121,7 +121,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Logs in with the chosen name
+	 * Logs in with the chosen name.
 	 * 
 	 * @param name
 	 *            chosen name
@@ -133,7 +133,7 @@ public class Session extends Observable {
 	
 	/**
 	 * sends an invite for a custom game with given board size to the specified
-	 * players
+	 * players.
 	 * 
 	 * @param boardSize
 	 *            the size of the custom game board
@@ -162,7 +162,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Replies to an invite
+	 * Replies to an invite.
 	 * 
 	 * @param accept
 	 *            true is accepted, false if the invite is rejected
@@ -226,7 +226,7 @@ public class Session extends Observable {
 	
 	/**
 	 * Connection failed handler, sets SessionState to disconnected and shows a
-	 * message to the user indicating the failure
+	 * message to the user indicating the failure.
 	 */
 	// @ ensures getState() == SessionState.disconnected;
 	private void connectFailed() {
@@ -235,7 +235,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * parse a message from the server
+	 * parse a message from the server.
 	 * 
 	 * @param packet
 	 */
@@ -293,7 +293,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Handles new invitations from the server
+	 * Handles new invitations from the server.
 	 * 
 	 * @param boardSize
 	 *            The size of the board
@@ -311,7 +311,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Updates the ui to reflect the current players on the server
+	 * Updates the ui to reflect the current players on the server.
 	 * 
 	 * @param playerStr
 	 *            the raw player list string received from the server
@@ -332,7 +332,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * getter playerPlayerLobbyData
+	 * getter playerPlayerLobbyData.
 	 * 
 	 * @return Map of <String playername, String status>
 	 */
@@ -350,14 +350,14 @@ public class Session extends Observable {
 	private void parsePlaced(String gamestate, int x, int y, String currentPlayer,
 			String nextPlayer) {
 		if (state != SessionState.ingame) {
-			UnknownServerError("Received a placed message while not in a game");
+			unknownServerError("Received a placed message while not in a game");
 			return;
 		}
 		
 		Optional<? extends Player> player = currentGame.getPlayers().stream()
 				.filter(p -> p.getName().equals(currentPlayer)).findAny();
 		if (!player.isPresent()) {
-			UnknownServerError("Received a move from a player that is not in the current game");
+			unknownServerError("Received a move from a player that is not in the current game");
 			return;
 		}
 		
@@ -374,7 +374,7 @@ public class Session extends Observable {
 	
 	/**
 	 * starts a game with 2 players by creating the PeerPlayer and Game objects,
-	 * calling startGame() and setting the state to ingame
+	 * calling startGame() and setting the state to ingame.
 	 * 
 	 * @param playername1
 	 * @param playername2
@@ -434,7 +434,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * getter currentGame
+	 * getter currentGame.
 	 * 
 	 * @return this.currentGame
 	 */
@@ -443,7 +443,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * getter invite
+	 * getter invite.
 	 * 
 	 * @return this.invitation
 	 */
@@ -452,7 +452,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Sets SessionState to authenticating
+	 * Sets SessionState to authenticating.
 	 */
 	// @ ensures getState() == SessionState.authenticating;
 	private void connected() {
@@ -461,16 +461,16 @@ public class Session extends Observable {
 	
 	/**
 	 * Called when the server sends something that is not according to the
-	 * protocol
+	 * protocol.
 	 */
-	/* @ pure */ private void UnknownServerError(String reason) {
+	/* @ pure */ private void unknownServerError(String reason) {
 		// TODO figure out what to actually do with this, do we
 		// disconnect/throw/ingore?
 		System.out.println("Server protocol error: " + reason);
 	}
 	
 	/**
-	 * Getter ui
+	 * Getter ui.
 	 * 
 	 * @return this.ui
 	 */
@@ -500,7 +500,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * Set the current bot or turns it off
+	 * Set the current bot or turns it off.
 	 * 
 	 * @param ai
 	 *            a AIBase instance or null to turn automatic moves off
@@ -511,7 +511,7 @@ public class Session extends Observable {
 	}
 	
 	/**
-	 * checks if the AI should do a move and starts the ai if it should
+	 * checks if the AI should do a move and starts the ai if it should.
 	 */
 	private void startAiMove() {
 		if (state != SessionState.ingame) {

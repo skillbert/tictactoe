@@ -36,7 +36,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Creates an AsyncSocket object from an existing and connected
+	 * Creates an AsyncSocket object from an existing and connected.
 	 * AsynchronousSocketChannel
 	 * 
 	 * @param channel
@@ -47,7 +47,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Connect the socket to a server
+	 * Connect the socket to a server.
 	 * 
 	 * @param host
 	 *            hostname or ip of the server
@@ -68,7 +68,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Called when this socket successfully connected
+	 * Called when this socket successfully connected.
 	 */
 	private void connected() {
 		if (connectedCb != null) {
@@ -78,7 +78,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Called when this socket failed to connect
+	 * Called when this socket failed to connect.
 	 * 
 	 * @param ex
 	 *            The exception thrown by the underlying socket
@@ -103,7 +103,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Attempts to flush any queued messages
+	 * Attempts to flush any queued messages.
 	 */
 	private synchronized void flush() {
 		if (iswriting) {
@@ -120,7 +120,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Sets the callback function for when the connection closes
+	 * Sets the callback function for when the connection closes.
 	 * 
 	 * @param cb
 	 *            The function to call when the socket connection closes
@@ -130,7 +130,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Sets the callback function for when the socket receives a message
+	 * Sets the callback function for when the socket receives a message.
 	 * 
 	 * @param cb
 	 *            This function is called with one string argument whenever the
@@ -142,7 +142,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Sets the callback function for when the socket is connected
+	 * Sets the callback function for when the socket is connected.
 	 * 
 	 * @param cb
 	 *            This function is called when the socket has successfully
@@ -153,7 +153,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Sets the callback function for if the socket failed to connect
+	 * Sets the callback function for if the socket failed to connect.
 	 * 
 	 * @param cb
 	 */
@@ -162,7 +162,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * closes the connection and the underlying socket
+	 * closes the connection and the underlying socket.
 	 */
 	public void close() {
 		if (channel != null) {
@@ -175,7 +175,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Starts the async reading action on the socket
+	 * Starts the async reading action on the socket.
 	 */
 	private synchronized void startReading() {
 		if (!isreading && isConnected()) {
@@ -186,7 +186,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Called when an error occurs while reading from the socket
+	 * Called when an error occurs while reading from the socket.
 	 */
 	public void connectionClosed() {
 		if (closeCb != null) {
@@ -196,7 +196,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Called when a new buffer is read from the socket
+	 * Called when a new buffer is read from the socket.
 	 */
 	private void bufferReceived(int length) {
 		if (length < 0) {
@@ -231,7 +231,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Gets the underlying AsynchronousSocketChannel object
+	 * Gets the underlying AsynchronousSocketChannel object.
 	 * 
 	 * @return
 	 */
@@ -248,7 +248,7 @@ public class AsyncSocket {
 	
 	
 	/**
-	 * Generic callable interface without arguments or return value
+	 * Generic callable interface without arguments or return value.
 	 * 
 	 * @author Wilbert
 	 *
@@ -258,7 +258,7 @@ public class AsyncSocket {
 	}
 	
 	/**
-	 * Generic callable interface with one argument and without return value
+	 * Generic callable interface with one argument and without return value.
 	 * 
 	 * @author Wilbert
 	 *

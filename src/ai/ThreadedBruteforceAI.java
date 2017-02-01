@@ -14,7 +14,7 @@ import common.MultiThreadTask;
  *
  */
 public class ThreadedBruteforceAI extends BruteForceAI {
-	private static final double goalPerThread = 40e6;
+	private static final double GOAL_PER_THREAD = 40e6;
 	private int[] beginFields;
 	private int[] beginMoves;
 	private int[] resultScores;
@@ -29,11 +29,11 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 		beginMoves = AIUtil.boardColumnIndexes(game.getBoard());
 		resultScores = new int[layerSize];
 		int nThreads = Runtime.getRuntime().availableProcessors();
-		setIterationGoal(beginMoves, nThreads * goalPerThread);
+		setIterationGoal(beginMoves, nThreads * GOAL_PER_THREAD);
 		
 		MultiThreadTask task = new MultiThreadTask();
 		for (int index = 0; index < layerSize; index++) {
-			task.AddTask(i -> asyncRecursiveMove((int) i), index);
+			task.addTask(i -> asyncRecursiveMove((int) i), index);
 		}
 		
 		task.addThreads(nThreads);
@@ -48,7 +48,7 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 	}
 	
 	/**
-	 * To be run when all branches are complete
+	 * To be run when all branches are complete.
 	 */
 	private Point asyncDone() {
 		int best = 0;
@@ -66,7 +66,7 @@ public class ThreadedBruteforceAI extends BruteForceAI {
 	}
 	
 	/**
-	 * A single branch that is run by a separate thread
+	 * A single branch that is run by a separate thread.
 	 * 
 	 * @param index
 	 *            the starting move of this branch

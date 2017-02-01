@@ -6,7 +6,8 @@ import common.SessionState;
 
 public class TestHandler extends CommandHandler {
 	
-	public TestHandler(Session session, int minArgs, String usage, SessionState requiredState, String wrongStateMessage){
+	public TestHandler(Session session, int minArgs, String usage, 
+			SessionState requiredState, String wrongStateMessage) {
 		super(session, minArgs, usage, requiredState, wrongStateMessage);
 	}
 	

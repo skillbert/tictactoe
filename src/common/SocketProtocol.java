@@ -1,7 +1,7 @@
 package common;
 
 /**
- * An interface to deal with the parsing of different socket level protocols
+ * An interface to deal with the parsing of different socket level protocols.
  * 
  * @author Wilbert
  *
@@ -18,7 +18,7 @@ public interface SocketProtocol {
 	public void setSocket(AsyncSocket sock);
 
 	/**
-	 * Builds a packet containing a raw text message
+	 * Builds a packet containing a raw text message.
 	 * 
 	 * @param str
 	 *            The string to encode in the packet

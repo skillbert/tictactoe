@@ -7,6 +7,6 @@ public class InvalidReplyInput extends ValidationError {
 	
 	@Override
 	public String getMessage() {
-		return("Please reply \"yes\" or \"no\"");
+		return "Please reply \"yes\" or \"no\"";
 	}
 }

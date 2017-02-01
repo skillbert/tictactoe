@@ -44,7 +44,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * Creates a new game server and starts listening on the given port
+	 * Creates a new game server and starts listening on the given port.
 	 * 
 	 * @param port
 	 *            The port to host the server on
@@ -65,7 +65,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * Deals with new clients and adds them to the game
+	 * Deals with new clients and adds them to the game.
 	 * 
 	 * @param sock
 	 *            The socket that is connected to the new client
@@ -78,7 +78,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * removes a client from the server and closes the connection is the client
+	 * removes a client from the server and closes the connection is the client.
 	 * is still connected
 	 * 
 	 * @param client
@@ -92,7 +92,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * Checks all clients and starts a game if enough players are queued
+	 * Checks all clients and starts a game if enough players are queued.
 	 */
 	public void findQueue() {
 		ArrayList<ClientConnection> cons = new ArrayList<>();
@@ -113,7 +113,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * Start a game with the players in players
+	 * Start a game with the players in players.
 	 * 
 	 * @param players
 	 *            players to add to the game
@@ -139,7 +139,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * Find the player using playername
+	 * Find the player using playername.
 	 * 
 	 * @param playername
 	 *            playername to look for
@@ -187,7 +187,7 @@ public class Server implements Observer {
 	}
 	
 	/**
-	 * messy fix for the design choice of not making server static
+	 * messy fix for the design choice of not making server static.
 	 * 
 	 * @return the main Server instance
 	 */

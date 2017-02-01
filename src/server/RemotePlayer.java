@@ -39,17 +39,17 @@ public class RemotePlayer implements Player {
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		Game game = (Game) o;
+		Game updateGame = (Game) o;
 		
 		switch ((Game.EventType) arg) {
 			case placed:
-				String newPlayer = game.getTurn().getName();
-				String currentPlayer = game.getPreviousTurn().getName();
-				Point lastmove = game.getLastMove();
-				connection.sendString("placed " + game.getState() + " " + lastmove.x + " "
+				String newPlayer = updateGame.getTurn().getName();
+				String currentPlayer = updateGame.getPreviousTurn().getName();
+				Point lastmove = updateGame.getLastMove();
+				connection.sendString("placed " + updateGame.getState() + " " + lastmove.x + " "
 						+ lastmove.y + " " + currentPlayer + " " + newPlayer);
 				
-				if (game.getState() != GameState.onGoing) {
+				if (updateGame.getState() != GameState.onGoing) {
 					connection.setState(SessionState.lobby);
 					connection.setPlayer(null);
 					connection.getServer().broadcastPlayers();
@@ -57,17 +57,17 @@ public class RemotePlayer implements Player {
 				break;
 			
 			case started:
-				ArrayList<? extends Player> players = game.getPlayers();
+				ArrayList<? extends Player> players = updateGame.getPlayers();
 				String playerstr = "";
 				for (Player p : players) {
 					playerstr += " " + p.getName();
 				}
 				connection.setState(SessionState.ingame);
-				if (game.getPlayers().size() == 2 && game.getBoard().getSize() == 4) {
+				if (updateGame.getPlayers().size() == 2 && updateGame.getBoard().getSize() == 4) {
 					connection.sendString(Protocol.STARTGAME + playerstr);
 				} else {
-					connection.sendString(
-							Protocol.STARTCUSTOMGAME + " " + game.getBoard().getSize() + playerstr);
+					connection.sendString(Protocol.STARTCUSTOMGAME + " "
+							+ updateGame.getBoard().getSize() + playerstr);
 				}
 				break;
 		}

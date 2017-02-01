@@ -36,7 +36,7 @@ public class Game extends Observable {
 	}
 	
 	/**
-	 * Start the game
+	 * Start the game.
 	 */
 	public void startGame() {
 		setChanged();
@@ -116,7 +116,7 @@ public class Game extends Observable {
 	}
 	
 	/**
-	 * getter last move
+	 * getter last move.
 	 * 
 	 * @return this.lastmove
 	 */
@@ -136,7 +136,7 @@ public class Game extends Observable {
 	}
 	
 	/**
-	 * getter players list
+	 * getter players list.
 	 * 
 	 * @return this.players
 	 */
